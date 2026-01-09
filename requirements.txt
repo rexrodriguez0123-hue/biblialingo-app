@@ -1,0 +1,11 @@
+Django>=5.0
+djangorestframework
+psycopg2-binary
+spacy
+python-dotenv
+gunicorn
+whitenoise
+django-cors-headers
+google-auth
+requests
+dj-database-url

@@ -1,0 +1,75 @@
+# Instrucciones de Despliegue - BibliaLingo MVP
+
+## 1. Ejecución Local (Backend)
+
+### Prerrequisitos
+- Python 3.11+
+- PostgreSQL (opcional)
+
+### Pasos
+1. **Configurar Entorno Virtual**
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\activate
+   ```
+
+2. **Instalar Dependencias**
+   ```bash
+   pip install -r requirements.txt
+   python -m spacy download es_core_news_sm
+   ```
+
+3. **Configurar Base de Datos**
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+
+4. **Ejecutar Servidor Backend**
+   ```bash
+   python manage.py runserver
+   ```
+
+## 2. Ejecución Local (Frontend - Flutter)
+
+### Prerrequisitos
+- Flutter SDK instalado y configurado en el PATH.
+- Android Studio (para emulador Android) o dispositivo físico.
+
+### Pasos
+1. **Navegar al directorio de la app**
+   ```bash
+   cd biblialingo_app
+   ```
+
+2. **Obtener dependencias**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Ejecutar App**
+   ```bash
+   flutter run
+   ```
+   *Nota: Asegúrate de tener un emulador corriendo o un dispositivo conectado.*
+
+## 3. Despliegue en Render.com (Backend)
+(Mismos pasos que en la versión anterior)
+
+## 4. Publicación en Play Store (Flutter)
+
+1. **Compilar App Bundle**
+   ```bash
+   flutter build appbundle
+   ```
+   El archivo generado estará en `build/app/outputs/bundle/release/app-release.aab`.
+
+2. **Subir a Google Play Console**
+   - Crear nueva aplicación.
+   - Subir el `.aab` en la sección de producción o pruebas internas.
+   - Completar ficha de la tienda.
+
+### Gestión de Licencias (IMPORTANTE)
+**Reina Valera 1960 (RVR1960)**:
+El texto de la RVR1960 es propiedad de la **American Bible Society**.
+- Para uso comercial o distribución masiva en Play Store, DEBES obtener un permiso por escrito o una licencia.

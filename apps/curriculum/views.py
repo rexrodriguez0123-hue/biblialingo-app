@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from .models import Course, Lesson, UserLessonProgress
 from .serializers import CourseSerializer, LessonSerializer
+from apps.bible_content.services.smart_generator import SmartExerciseGenerator
 
 class CurriculumViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -61,4 +62,22 @@ class LessonViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        # Check if lesson has any exercises
+        # We need to check exercises attached to any of its verses
+        has_exercises = any(v.exercises.exists() for v in instance.verses.all())
+        
+        if not has_exercises:
+            print(f"JIT Generation: Generating content for {instance.title}...")
+            generator = SmartExerciseGenerator()
+            generator.generate_for_lesson(instance)
+            # Re-fetch instance to include new exercises in serialization? 
+            # Actually, standard retrieve might use cached queryset, so let's refresh.
+            instance = self.get_object()
+
+        serializer = self.get_serializer(instance)
+        return response.Response(serializer.data)

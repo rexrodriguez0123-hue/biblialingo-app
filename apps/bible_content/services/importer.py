@@ -20,7 +20,13 @@ class BibleImporter:
         }
         """
         # Ensure Book exists
-        current_book, _ = Book.objects.get_or_create(name=book_name, defaults={'testament': 'Old'})
+        current_book, _ = Book.objects.get_or_create(
+            name=book_name, 
+            defaults={
+                'testament': 'Old',
+                'order': 1  # Genesis is the first book
+            }
+        )
         
         chapters = json_data.get('chapters', [])
         

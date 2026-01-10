@@ -63,9 +63,9 @@ class BibleImporter:
                     lesson.verses.add(verse)
                 
                 # Generate Exercises
-                # Only generate if we haven't already (simple check)
-                if not verse.exercises.exists():
-                    self.generate_exercises(verse)
+                # Disabled in favor of JIT Smart Generation in API
+                # if not verse.exercises.exists():
+                #    self.generate_exercises(verse)
 
     def parse_text(self, text):
         """Legacy text parser"""

@@ -7,6 +7,7 @@ class Exercise(models.Model):
     TYPE_CHOICES = [
         ('cloze', 'Cloze Deletion'),
         ('scramble', 'Sentence Scramble'),
+        ('type_in', 'Type to Complete'),
     ]
     verse = models.ForeignKey(Verse, on_delete=models.CASCADE, related_name='exercises')
     exercise_type = models.CharField(max_length=20, choices=TYPE_CHOICES)

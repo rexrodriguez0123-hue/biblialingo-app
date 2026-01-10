@@ -33,6 +33,7 @@ class Verse(models.Model):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='verses')
     number = models.IntegerField()
     text = models.TextField()
+    hebrew_text = models.TextField(blank=True, null=True)
     tags = models.ManyToManyField(TheologicalTag, blank=True, related_name='verses')
 
     class Meta:

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../main.dart';
@@ -12,64 +11,6 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  // TODO: Replace with user provided Client ID
-  // No scopes needed for basic profile (id, email)
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-  Future<void> _handleGoogleSignIn() async {
-    print('DEBUG: Attempting Google Sign-In...');
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        print('DEBUG: Google User is null (User canceled?)');
-        return;
-      }
-      print('DEBUG: Google User signed in: ${googleUser.email}');
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-      print('DEBUG: ID Token retrieved: ${idToken != null ? "Yes" : "No"}');
-
-      if (idToken != null) {
-        if (!mounted) return;
-        final api = context.read<ApiService>();
-        print('DEBUG: Sending token to backend...');
-        
-        try {
-          final userData = await api.signInWithGoogle(idToken);
-          print('DEBUG: Update successful: $userData');
-          
-          if (!mounted) return;
-          context.read<UserState>().setUser(userData);
-          Navigator.pushReplacementNamed(context, '/dashboard');
-        } catch (backendError) {
-          print('DEBUG: Backend Error: $backendError');
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('Error de servidor: $backendError')),
-          );
-        }
-      }
-    } catch (error, stackTrace) {
-      print('DEBUG: Error in Google Sign-In: $error');
-      print('DEBUG: StackTrace: $stackTrace');
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Error de Conexión'),
-          content: Text('$error'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,14 +22,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              Image.network(
-                'https://cdn-icons-png.flaticon.com/512/2680/2680965.png',
-                height: 200,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.menu_book_rounded,
-                  size: 150,
-                  color: Colors.blue,
-                ),
+              Image.asset(
+                'assets/images/welcome_hero.jpg',
+                height: 250,
+                fit: BoxFit.contain,
               ),
               const SizedBox(height: 40),
               const Text(
@@ -152,28 +89,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
-              const Text(
-                'O inicia sesión con',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 20),
-              InkWell(
-                onTap: _handleGoogleSignIn,
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: const Icon(
-                    Icons.g_mobiledata,
-                    size: 40,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 60),
             ],
           ),
         ),

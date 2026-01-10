@@ -9,3 +9,6 @@ python manage.py migrate
 
 # Download SpaCy model
 python -m spacy download es_core_news_sm
+
+# Populate Database (Idempotent)
+python manage.py populate_genesis

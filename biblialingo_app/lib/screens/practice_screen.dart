@@ -17,7 +17,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   
   // State for current question
   bool _answered = false;
-  String? _selectedOption; // For cloze/scramble multiple choice
+  dynamic _selectedOption; // String for cloze/selection, List<String> for scramble
   TextEditingController _textController = TextEditingController(); // For type-in/cloze
   bool _isCorrect = false;
 
@@ -163,67 +163,182 @@ class _PracticeScreenState extends State<PracticeScreen> {
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
-        title: LinearProgressIndicator(value: progress),
+        title: LinearProgressIndicator(value: progress, minHeight: 10, borderRadius: BorderRadius.circular(5)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
              const SizedBox(height: 20),
-             Text('Pregunta ${_currentIndex + 1} de ${_exercises.length}', style: TextStyle(color: Colors.grey)),
-             const SizedBox(height: 20),
+             Text(
+               'Pregunta ${_currentIndex + 1} de ${_exercises.length}', 
+               style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+               textAlign: TextAlign.center,
+             ),
+             const SizedBox(height: 30),
              
-             if (type == 'cloze') ...[
-                Text('Completa el espacio:', style: TextStyle(fontSize: 18)),
+             // --- EXERCISE CONTENT ---
+             if (type == 'type_in') ...[
+                Text('Escribe el versículo:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
-                Text(questionData['text'], style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                const Spacer(),
-                // Mock Options (In real app, we need distractors from backend or generate them)
-                // Since our backend 'cloze' assumes text input or options?
-                // The user request showed options. 
-                // Our data gen: "question_text": "En el ... ____ ..."
-                // Importer generated options? No, just question and answer.
-                // We need to generate distractors or use Type In.
-                // For now, let's use a Text Input if options aren't provided, OR generate dummy options.
-                // The user explicit feedback was about OPTIONS. 
-                // Importer didn't create options list. 
-                // I will use TextField for now to be safe, or generate random words.
-                TextField(
-                   controller: _textController,
-                   decoration: InputDecoration(
-                     border: OutlineInputBorder(),
-                     hintText: 'Escribe la palabra que falta'
-                   ),
-                   onSubmitted: (val) => _checkAnswer(val),
-                ),
+                Text(exercise['answer_data']['text'], style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.grey)), // Hint? Maybe hide it
+                // Actually, for "write the verse", we usually show the reference and ask them to type it?
+                // Or "Listen and write"? 
+                // Given the prompt "Escribe el versículo completo:", let's show the TextField.
+                // We should probably hide the answer text unless it's a "Copy" exercise. 
+                // Let's assume it's a "Read and Copy" to practice typing/spelling for now, as memory is hard without prompts.
                 const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _answered ? null : () => _checkAnswer(_textController.text),
-                  child: const Text('Comprobar'),
-                )
-             ] else if (type == 'type_in') ...[
-                Text(questionData['prompt'] ?? 'Escribe:', style: TextStyle(fontSize: 18)),
-                 const SizedBox(height: 20),
                 TextField(
                    controller: _textController,
-                   maxLines: 3,
+                   maxLines: 4,
                    decoration: InputDecoration(
                      border: OutlineInputBorder(),
-                     hintText: 'Escribe el versículo...'
+                     hintText: 'Escribe aquí...'
                    ),
                 ),
+             ] 
+             else if (type == 'scramble') ...[
+                Text('Ordena las palabras:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _answered ? null : () => _checkAnswer(_textController.text),
-                  child: const Text('Comprobar'),
-                )
-             ] else ...[
-                Text('Tipo de ejercicio no soportado: $type'),
-                ElevatedButton(onPressed: _nextQuestion, child: Text('Saltar'))
+                // Target Area (Selected Words)
+                 Wrap(
+                   spacing: 8,
+                   children: (_selectedOption as List<String>? ?? []).map((word) {
+                     return Chip(
+                       label: Text(word),
+                       onDeleted: _answered ? null : () {
+                         setState(() {
+                           final list = List<String>.from(_selectedOption);
+                           list.remove(word);
+                           _selectedOption = list;
+                         });
+                       },
+                     );
+                   }).toList(),
+                 ),
+                 Divider(),
+                 // Source Area (Available Words)
+                 Wrap(
+                   spacing: 8,
+                   children: (questionData['words'] as List).cast<String>().map((word) {
+                      // Hide if already selected (simple count check needed for duplicates, but for now simple hide)
+                      // Better: Filter out one instance.
+                      final currentSelected = _selectedOption as List<String>? ?? [];
+                      final isSelected = currentSelected.contains(word); 
+                      // Simple implementation: Don't hide, just allow multiple adds? No, usually move.
+                      // Let's just create a list of "available" words state.
+                      // For simplicity in this edit: Just buttons that append.
+                      return ActionChip(
+                        label: Text(word),
+                        onPressed: _answered ? null : () {
+                          setState(() {
+                             final list = List<String>.from(_selectedOption ?? []);
+                             list.add(word);
+                             _selectedOption = list;
+                          });
+                        },
+                      );
+                   }).toList(),
+                 ),
              ]
+             else if (type == 'cloze' || type == 'selection' || type == 'true_false') ...[
+                 Text(questionData['text'], style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                 const SizedBox(height: 40),
+                 
+                 // Options Buttons
+                 if (questionData['options'] != null)
+                   ...(questionData['options'] as List).map((option) {
+                     final isSelected = _selectedOption == option;
+                     Color btnColor = Colors.blue;
+                     if (_answered) {
+                        if (option == exercise['answer_data']['correct']) {
+                          btnColor = Colors.green; // Show correct
+                        } else if (isSelected) {
+                          btnColor = Colors.red; // Show wrong selection
+                        } else {
+                          btnColor = Colors.grey;
+                        }
+                     } else {
+                       btnColor = isSelected ? Colors.blue.shade900 : Colors.blue;
+                     }
+
+                     return Padding(
+                       padding: const EdgeInsets.only(bottom: 10),
+                       child: ElevatedButton(
+                         style: ElevatedButton.styleFrom(
+                           backgroundColor: btnColor,
+                           padding: EdgeInsets.symmetric(vertical: 15),
+                         ),
+                         onPressed: _answered ? null : () {
+                           _checkAnswer(option);
+                         },
+                         child: Text(option.toString(), style: TextStyle(fontSize: 16, color: Colors.white)),
+                       ),
+                     );
+                   }).toList()
+             ],
+
+             const Spacer(),
+             
+             // Check Button (Only for Type In and Scramble where explicit check is needed)
+             if (type == 'type_in' || type == 'scramble')
+               ElevatedButton(
+                 style: ElevatedButton.styleFrom(
+                   backgroundColor: Colors.green,
+                   padding: EdgeInsets.symmetric(vertical: 15)
+                 ),
+                 onPressed: _answered ? null : () => _checkAnswer(type == 'type_in' ? _textController.text : _selectedOption),
+                 child: const Text('Comprobar', style: TextStyle(fontSize: 18, color: Colors.white)),
+               ),
+               
+             // Continue Button (Only after answered)
+             if (_answered)
+               ElevatedButton(
+                 onPressed: _nextQuestion,
+                 child: const Text('Continuar'),
+               )
           ],
         ),
       ),
     );
+  }
+
+  void _checkAnswer(dynamic answer) {
+    if (_answered) return;
+
+    final currentExercise = _exercises[_currentIndex];
+    final type = currentExercise['exercise_type'];
+    final correct = currentExercise['answer_data']['correct'] ?? currentExercise['answer_data']['correct_order']; 
+    // correct_order is List<String> for scramble
+    
+    bool correctGuess = false;
+
+    if (type == 'scramble') {
+       // Compare lists
+       final userList = answer as List<String>;
+       final correctList = List<String>.from(correct);
+       correctGuess = userList.join(' ') == correctList.join(' ');
+    } else if (type == 'type_in') {
+       final correctAnswer = currentExercise['answer_data']['text']; // Full text
+       // Loose comparison
+       correctGuess = answer.toString().toLowerCase().replaceAll(RegExp(r'[^\w]'), '') == 
+                      correctAnswer.toString().toLowerCase().replaceAll(RegExp(r'[^\w]'), '');
+    } else {
+       // Selection / Cloze / TrueFalse
+       correctGuess = answer == correct;
+    }
+
+    setState(() {
+      _answered = true;
+      _isCorrect = correctGuess;
+      _selectedOption = answer;
+    });
+
+    // Sound effect or haptic could go here
+    if (correctGuess) {
+       // Auto-advance logic if separate button not preferred? 
+       // We added a "Continuar" button in the UI, so we wait for user.
+    }
   }
 }

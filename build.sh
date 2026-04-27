@@ -20,3 +20,6 @@ python manage.py shell -c "from apps.bible_content.models import Book; exit(0) i
     python manage.py load_genesis
     python manage.py generate_genesis_curriculum
 )
+
+echo "Applying specific text corrections for Genesis 1..."
+python fix_genesis_1.py

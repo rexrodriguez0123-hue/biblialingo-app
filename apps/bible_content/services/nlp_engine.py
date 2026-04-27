@@ -254,22 +254,14 @@ def _generate_selection(verse_text, doc, key_tokens):
 def _generate_scramble(verse_text, doc, key_tokens):
     """
     Sentence scramble: reorder the words.
-    For long verses, use only a fragment (first sentence or ~10 words).
+    Uses the full verse text as requested by the user, without truncating.
 
     question_data: {"words": ["creó", "principio", "Dios", "el", "En"]}
     answer_data:   {"correct_order": ["En", "el", "principio", "creó", "Dios"]}
     """
-    # Use a sentence fragment for manageability
-    sentences = list(doc.sents)
-    if sentences:
-        sent = random.choice(sentences)
-        words = [tok.text for tok in sent if tok.is_alpha or tok.text in '.,;:']
-    else:
-        words = [tok.text for tok in doc if tok.is_alpha]
+    # Use all words from the verse
+    words = [tok.text for tok in doc if tok.is_alpha or tok.text in '.,;:']
 
-    # Limit to 8-12 words for playability
-    if len(words) > 12:
-        words = words[:10]
     if len(words) < 3:
         return None
 

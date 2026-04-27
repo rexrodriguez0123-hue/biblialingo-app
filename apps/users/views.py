@@ -29,8 +29,14 @@ def _regenerate_hearts(profile):
     hearts_to_add = int(hours_passed // 4)
 
     if hearts_to_add > 0:
-        profile.hearts = min(5, profile.hearts + hearts_to_add)
-        profile.last_heart_regen = now
+        new_hearts = profile.hearts + hearts_to_add
+        if new_hearts >= 5:
+            profile.hearts = 5
+            profile.last_heart_regen = now
+        else:
+            profile.hearts = new_hearts
+            profile.last_heart_regen += timezone.timedelta(hours=4 * hearts_to_add)
+            
         profile.save(update_fields=['hearts', 'last_heart_regen'])
 
 

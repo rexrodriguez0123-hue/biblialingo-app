@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import 'practice_screen.dart';
 import '../main.dart';
 import 'dart:math' as math;
+import 'dart:async';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -24,7 +25,7 @@ class DashboardScreen extends StatelessWidget {
             _buildTopStat(Icons.menu_book, 'RVR1960', Colors.grey),
             _buildTopStat(Icons.local_fire_department, '${userState.streak}', Colors.blue),
             _buildTopStat(Icons.hexagon, '${userState.gems}', Colors.orange),
-            _buildTopStat(Icons.favorite, '${userState.hearts}/5', Colors.red),
+            const HeartTimerWidget(),
           ],
         ),
       ),
@@ -463,4 +464,103 @@ class _BezierConnectorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class HeartTimerWidget extends StatefulWidget {
+  const HeartTimerWidget({super.key});
+
+  @override
+  State<HeartTimerWidget> createState() => _HeartTimerWidgetState();
+}
+
+class _HeartTimerWidgetState extends State<HeartTimerWidget> {
+  Timer? _timer;
+  String _timeString = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      final userState = context.read<UserState>();
+      if (userState.hearts >= 5 || userState.lastHeartRegen == null) {
+        if (_timeString.isNotEmpty) {
+          setState(() {
+            _timeString = "";
+          });
+        }
+        return;
+      }
+
+      DateTime? lastRegen = DateTime.tryParse(userState.lastHeartRegen!);
+      if (lastRegen == null) return;
+      
+      // Calculate next regen
+      DateTime nextRegen = lastRegen.add(const Duration(hours: 4));
+      Duration remaining = nextRegen.difference(DateTime.now().toUtc());
+
+      if (remaining.isNegative) {
+        // Time is up, simulate local regeneration
+        userState.updateStats(
+          hearts: userState.hearts + 1, 
+          lastHeartRegen: nextRegen.toUtc().toIso8601String()
+        );
+        return;
+      }
+
+      String twoDigits(int n) => n.toString().padLeft(2, '0');
+      String newTimeString = "(${twoDigits(remaining.inHours)}:${twoDigits(remaining.inMinutes.remainder(60))}:${twoDigits(remaining.inSeconds.remainder(60))})";
+      
+      if (_timeString != newTimeString) {
+        setState(() {
+          _timeString = newTimeString;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userState = context.watch<UserState>();
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.favorite, color: Colors.red, size: 22),
+            const SizedBox(width: 4),
+            Text(
+              '${userState.hearts}/5',
+              style: const TextStyle(
+                color: Colors.red, 
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+        if (userState.hearts < 5 && _timeString.isNotEmpty)
+          Text(
+            _timeString,
+            style: const TextStyle(
+              color: Color(0xFF00C853), // Green
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+      ],
+    );
+  }
 }

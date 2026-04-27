@@ -34,6 +34,7 @@ class UserState extends ChangeNotifier {
   int get totalXp => _user?['totalXp'] ?? 0;
   Map<String, dynamic> get preferences => _user?['preferences'] ?? {};
   String? get token => _user?['token'];
+  String? get lastHeartRegen => _user?['lastHeartRegen'];
 
   void setUser(Map<String, dynamic> user) {
     _user = user;
@@ -41,13 +42,14 @@ class UserState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateStats({int? hearts, int? gems, int? streak, int? totalXp, Map<String, dynamic>? preferences}) {
+  void updateStats({int? hearts, int? gems, int? streak, int? totalXp, Map<String, dynamic>? preferences, String? lastHeartRegen}) {
     if (_user == null) return;
     if (hearts != null) _user!['hearts'] = hearts;
     if (gems != null) _user!['gems'] = gems;
     if (streak != null) _user!['streak'] = streak;
     if (totalXp != null) _user!['totalXp'] = totalXp;
     if (preferences != null) _user!['preferences'] = preferences;
+    if (lastHeartRegen != null) _user!['lastHeartRegen'] = lastHeartRegen;
     notifyListeners();
   }
 

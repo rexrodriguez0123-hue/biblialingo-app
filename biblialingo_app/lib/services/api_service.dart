@@ -87,6 +87,7 @@ class ApiService {
       'gems': data['user']['profile']['gems'],
       'streak': data['user']['profile']['streak_days'],
       'totalXp': data['user']['profile']['total_xp'],
+      'lastHeartRegen': data['user']['profile']['last_heart_regen'],
       'token': data['token'],
     };
   }
@@ -105,6 +106,7 @@ class ApiService {
       'gems': data['user']['profile']['gems'],
       'streak': data['user']['profile']['streak_days'],
       'totalXp': data['user']['profile']['total_xp'],
+      'lastHeartRegen': data['user']['profile']['last_heart_regen'],
       'token': data['token'],
     };
   }
@@ -121,6 +123,7 @@ class ApiService {
       'gems': data['user']['profile']['gems'],
       'streak': data['user']['profile']['streak_days'],
       'totalXp': data['user']['profile']['total_xp'],
+      'lastHeartRegen': data['user']['profile']['last_heart_regen'],
       'token': data['token'],
     };
   }

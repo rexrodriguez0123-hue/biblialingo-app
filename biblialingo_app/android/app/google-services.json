@@ -1,29 +1,29 @@
 {
-    "project_info": {
-        "project_number": "643615710566",
-        "project_id": "vision-price-finder-app",
-        "storage_bucket": "vision-price-finder-app.firebasestorage.app"
-    },
-    "client": [
-        {
-            "client_info": {
-                "mobilesdk_app_id": "1:643615710566:android:1f33e1546c640f0d56bca7",
-                "android_client_info": {
-                    "package_name": "com.example.biblialingo_app"
-                }
-            },
-            "oauth_client": [],
-            "api_key": [
-                {
-                    "current_key": "AIzaSyAIgZNv-GmEA7dlM1fFb_FuhMgLKXd7Zu8"
-                }
-            ],
-            "services": {
-                "appinvite_service": {
-                    "other_platform_oauth_client": []
-                }
-            }
+  "project_info": {
+    "project_number": "1067304772395",
+    "project_id": "biblialingo",
+    "storage_bucket": "biblialingo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067304772395:android:6ba5dc4b88eea88378db6e",
+        "android_client_info": {
+          "package_name": "com.example.biblialingo_app"
         }
-    ],
-    "configuration_version": "1"
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSlP_XI7B2nJt1kAHwPLK_1BiewEpwJNc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
 }

@@ -1,83 +1,152 @@
-from rest_framework import viewsets, permissions, response
-from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404
-from .models import Course, Lesson, UserLessonProgress
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from .models import Course, Lesson
+from .serializers import LessonDashboardSerializer
+from apps.bible_content.models import Verse
 from apps.exercises.models import Exercise
-from .serializers import CourseSerializer, LessonSerializer
-from apps.bible_content.services.smart_generator import SmartExerciseGenerator
+from apps.exercises.serializers import ExerciseSerializer
 
-class CurriculumViewSet(viewsets.ReadOnlyModelViewSet):
+import logging
+logger = logging.getLogger(__name__)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def course_dashboard_data(request, course_id):
     """
-    API endpoint that allows courses and lessons to be viewed.
+    GET /api/v1/curriculum/courses/{course_id}/dashboard_data/
+    Returns the course with all lessons and their progress/unlock status.
+
+    Response format (matching Flutter frontend):
+    {
+        "course_title": "Génesis RVR1960",
+        "lessons": [
+            {"id": 1, "title": "...", "order": 1, "is_unlocked": true, "progress": 0.7},
+            ...
+        ]
+    }
     """
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    try:
+        course = Course.objects.get(pk=course_id)
+    except Course.DoesNotExist:
+        return Response(
+            {'error': 'Curso no encontrado.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
-    @action(detail=True, methods=['get'])
-    def dashboard_data(self, request, pk=None):
-        """
-        Custom endpoint to return lessons with user-specific progress and locking status.
-        """
-        course = self.get_object()
-        lessons = course.lessons.all().order_by('order')
-        
-        user = request.user
-        lesson_data = []
-        
-        # Unlock logic: First lesson is always unlocked.
-        # Following lessons are unlocked if the previous one is completed.
-        previous_completed = True 
-        
-        for lesson in lessons:
-            # Check if user has progress
-            progress = UserLessonProgress.objects.filter(user=user, lesson=lesson).first()
-            is_completed = progress is not None and progress.score >= 80 # Threshold?
-            
-            # Simple progress calc (placeholder logic)
-            # If we have UserLessonProgress, assume 100% or store % there
-            progress_percent = 1.0 if is_completed else 0.0
-            
-            is_unlocked = previous_completed
-            
-            lesson_data.append({
-                'id': lesson.id,
-                'title': lesson.title,
-                'order': lesson.order,
-                'is_unlocked': is_unlocked,
-                'is_completed': is_completed,
-                'progress': progress_percent,
-            })
-            
-            # Update for next iteration
-            previous_completed = is_completed
+    lessons = Lesson.objects.filter(
+        unit__course=course
+    ).select_related('unit').order_by('order')
 
-        return response.Response({
-            'course_title': course.title,
-            'lessons': lesson_data
+    serializer = LessonDashboardSerializer(
+        lessons,
+        many=True,
+        context={'user': request.user},
+    )
+
+    return Response({
+        'course_title': course.title,
+        'lessons': serializer.data,
+    })
+
+
+def _jit_generate_exercises(lesson, verses_qs):
+    """
+    JIT (Just-In-Time) exercise generation.
+    If a lesson has no exercises, generate them using the NLP engine.
+    """
+    existing_count = Exercise.objects.filter(lesson=lesson).count()
+    if existing_count > 0:
+        return  # Already has exercises
+
+    try:
+        from apps.bible_content.services.nlp_engine import generate_exercises_for_lesson
+
+        verses_data = [(v.id, v.number, v.text) for v in verses_qs]
+        if not verses_data:
+            return
+
+        exercises = generate_exercises_for_lesson(verses_data, exercises_per_verse=2)
+
+        for ex_data in exercises:
+            Exercise.objects.create(
+                lesson=lesson,
+                verse_id=ex_data['verse_id'],
+                exercise_type=ex_data['exercise_type'],
+                question_data=ex_data['question_data'],
+                answer_data=ex_data['answer_data'],
+                difficulty=ex_data.get('difficulty', 1),
+                order=ex_data['order'],
+            )
+
+        logger.info(f'JIT generated {len(exercises)} exercises for lesson {lesson.id}')
+    except Exception as e:
+        logger.error(f'JIT exercise generation failed for lesson {lesson.id}: {e}')
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def lesson_detail(request, lesson_id):
+    """
+    GET /api/v1/curriculum/lessons/{lesson_id}/
+    Returns lesson details with verses and exercises.
+    If no exercises exist, generates them on-the-fly (JIT) using SpaCy NLP.
+
+    Response format (matching Flutter frontend):
+    {
+        "id": 1,
+        "title": "Génesis 1: La Creación",
+        "verses": [
+            {
+                "text": "En el principio creó Dios...",
+                "exercises": [
+                    {
+                        "exercise_type": "cloze",
+                        "question_data": {"text": "En el principio creó Dios los _____ y la tierra."},
+                        "answer_data": {"correct": "cielos"}
+                    }
+                ]
+            }
+        ]
+    }
+    """
+    try:
+        lesson = Lesson.objects.select_related('chapter').get(pk=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response(
+            {'error': 'Lección no encontrada.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Get verses in the lesson's range
+    verses_qs = Verse.objects.filter(chapter=lesson.chapter)
+    if lesson.verse_range_start:
+        verses_qs = verses_qs.filter(number__gte=lesson.verse_range_start)
+    if lesson.verse_range_end:
+        verses_qs = verses_qs.filter(number__lte=lesson.verse_range_end)
+    verses_qs = verses_qs.order_by('number')
+
+    # JIT: Generate exercises if none exist
+    _jit_generate_exercises(lesson, verses_qs)
+
+    # Build response with verses and their exercises
+    verses_data = []
+    for verse in verses_qs:
+        exercises = Exercise.objects.filter(verse=verse, lesson=lesson).order_by('order')
+        exercises_data = ExerciseSerializer(exercises, many=True).data
+
+        verses_data.append({
+            'text': verse.text,
+            'number': verse.number,
+            'exercises': exercises_data,
         })
 
-class LessonViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint for individual lessons.
-    """
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    return Response({
+        'id': lesson.id,
+        'title': lesson.title,
+        'verses': verses_data,
+    })
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        
-        # Check if lesson has any exercises (Optimized Query)
-        has_exercises = Exercise.objects.filter(verse__lessons=instance).exists()
-        
-        if not has_exercises:
-            print(f"JIT Generation: Generating content for {instance.title}...")
-            generator = SmartExerciseGenerator()
-            generator.generate_for_lesson(instance)
-            # Re-fetch instance to include new exercises in serialization? 
-            # Actually, standard retrieve might use cached queryset, so let's refresh.
-            instance = self.get_object()
-
-        serializer = self.get_serializer(instance)
-        return response.Response(serializer.data)

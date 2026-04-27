@@ -10,7 +10,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<UserState>().user;
+    final userState = context.watch<UserState>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFE5F7FF), // Fondo celeste muy claro
@@ -22,9 +22,9 @@ class DashboardScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildTopStat(Icons.menu_book, 'RVR1960', Colors.grey),
-            _buildTopStat(Icons.local_fire_department, '${user?['streak'] ?? 5}', Colors.blue),
-            _buildTopStat(Icons.hexagon, '${user?['gems'] ?? 450}', Colors.orange),
-            _buildTopStat(Icons.favorite, '${user?['hearts'] ?? 5}/5', Colors.red),
+            _buildTopStat(Icons.local_fire_department, '${userState.streak}', Colors.blue),
+            _buildTopStat(Icons.hexagon, '${userState.gems}', Colors.orange),
+            _buildTopStat(Icons.favorite, '${userState.hearts}/5', Colors.red),
           ],
         ),
       ),
@@ -97,6 +97,31 @@ class DashboardScreen extends StatelessWidget {
     if (title.toLowerCase().contains('intro')) return Icons.menu_book;
     return Icons.star;
   }
+
+  void _showNoHeartsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¡Sin Corazones! 💔'),
+        content: const Text('Te has quedado sin vidas. Espera a que se regeneren o ve a la tienda para rellenarlas.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pushNamed(context, '/shop');
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            child: const Text('Ir a la Tienda', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildUnitRibbon(String title) {
     return Center(
@@ -207,6 +232,11 @@ class DashboardScreen extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: isUnlocked ? () {
+               final userState = context.read<UserState>();
+               if (userState.hearts <= 0) {
+                 _showNoHeartsDialog(context);
+                 return;
+               }
                Navigator.push(
                  context, 
                  MaterialPageRoute(builder: (_) => PracticeScreen(lessonId: lessonId))

@@ -263,53 +263,9 @@ FirebaseMessaging.onMessage.listen((RemoteMessage message) {
 
 ---
 
-## 7. 📚 Agregar Más Libros Bíblicos
 
-### ¿Qué es?
-Expandir contenido del Antiguo Testamento (actualmente solo Génesis) agregando más libros: Éxodo, Levítico, Números, Deuteronomio, etc.
 
-### ¿Cuál es el problema?
-- Solo Génesis tiene versículos (1,438)
-- Lecciones repetitivas después de terminar Génesis
-- Usuarios abandonan sin más contenido
-- MVP solo muestra viabilidad, no cobertura real
-
-### ¿Cómo se soluciona?
-
-**Paso 1: Obtener texto bíblico**
-```bash
-# Descargar RVR1960 completa (XML o JSON)
-# Fuente: https://github.com/openbibledata/
-```
-
-**Paso 2: Importar a BD**
-```python
-# Crear management command similar a genesis_loader
-python manage.py load_bible_books --file rvr1960.json
-# Populate: Book, Chapter, Verse models
-```
-
-**Paso 3: Generar ejercicios JIT**
-```python
-# El NLP engine ya hace esto automáticamente
-# Solo necesita que los versículos existan
-```
-
-**Paso 4: Agregar selector de libros en UI**
-```dart
-// En dashboard: Dropdown para elegir qué libro estudiar
-DropdownButton(
-  items: books.map((b) => DropdownMenuItem(
-    value: b.id,
-    child: Text(b.name),
-  )).toList(),
-  onChanged: (bookId) => _startLesson(bookId),
-)
-```
-
----
-
-## 8. 🏆 Social Features — Leaderboard
+## 7. 🏆 Social Features — Leaderboard
 
 ### ¿Qué es?
 Tabla de clasificación donde usuarios ven su ranking comparado con otros (amigos o global) basado en XP, racha, o gemas.
@@ -369,9 +325,10 @@ ListView.builder(
 **DESEABLE (Semana 4+):**
 5. Level System
 6. Firebase Notifications
-7. Más libros
-8. Leaderboard
+7. Leaderboard
 
 ---
 
-**Estado:** Listo para deployment, con 6 mejoras futuras planificadas.
+**Nota MVP:** El objetivo actual es **Génesis solamente** (1,438 versículos limpiados y listos). Agregar más libros bíblicos será post-MVP.
+
+**Estado:** Listo para deployment, con 5 mejoras futuras planificadas.

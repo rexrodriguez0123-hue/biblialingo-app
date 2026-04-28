@@ -11,38 +11,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isUpdatingPreferences = false;
 
-  Future<void> _updateTheologicalPreference(bool value, String key) async {
-    setState(() => _isUpdatingPreferences = true);
-    final api = context.read<ApiService>();
-    final userState = context.read<UserState>();
-
-    try {
-      final currentPrefs = Map<String, dynamic>.from(userState.preferences);
-      currentPrefs[key] = value;
-
-      final result = await api.patchProfile({
-        'theological_preferences': currentPrefs
-      });
-
-      if (mounted) {
-        userState.updateStats(
-          preferences: result['user']['profile']['theological_preferences']
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isUpdatingPreferences = false);
-      }
-    }
-  }
 
   @override
   void initState() {
@@ -62,9 +31,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final userState = context.watch<UserState>();
-    
-    // Parse preference safely
-    final bool excludeFestivities = userState.preferences['exclude_festivities'] == true;
 
     // Cálculos del Sistema de Niveles
     final int totalXp = userState.totalXp;
@@ -156,16 +122,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             const SizedBox(height: 40),
-            ListTile(
-              title: const Text('Preferencias Teológicas'),
-              subtitle: const Text('Excluir festividades (ej. Halloween/Navidad en oraciones)'),
-              trailing: _isUpdatingPreferences 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : Switch(
-                      value: excludeFestivities, 
-                      onChanged: (v) => _updateTheologicalPreference(v, 'exclude_festivities'),
-                    ),
-            ),
             const Spacer(),
             ElevatedButton(
               onPressed: () {

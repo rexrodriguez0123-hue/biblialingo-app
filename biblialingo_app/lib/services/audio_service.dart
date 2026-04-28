@@ -1,4 +1,4 @@
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 
 class AudioService {
   static final AudioService _instance = AudioService._internal();
@@ -15,7 +15,8 @@ class AudioService {
   /// Reproducir sonido de respuesta correcta
   Future<void> playCorrectSound() async {
     try {
-      await _audioPlayer.play(AssetSource('audio/correct.wav'));
+      await _audioPlayer.setAsset('assets/audio/correct.wav');
+      await _audioPlayer.play();
     } catch (e) {
       print('Error reproduciendo sonido correcto: $e');
     }
@@ -24,7 +25,8 @@ class AudioService {
   /// Reproducir sonido de respuesta incorrecta
   Future<void> playIncorrectSound() async {
     try {
-      await _audioPlayer.play(AssetSource('audio/incorrect.wav'));
+      await _audioPlayer.setAsset('assets/audio/incorrect.wav');
+      await _audioPlayer.play();
     } catch (e) {
       print('Error reproduciendo sonido incorrecto: $e');
     }
@@ -42,7 +44,7 @@ class AudioService {
 
   /// Reanudar sonido pausado
   Future<void> resumeSound() async {
-    await _audioPlayer.resume();
+    await _audioPlayer.play();
   }
 
   /// Establecer volumen (0.0 a 1.0)

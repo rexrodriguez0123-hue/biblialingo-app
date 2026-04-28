@@ -96,7 +96,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
       case 'scramble':
         final correctOrder = List<String>.from(answerData['correct_order'] ?? []);
-        final userList = answer is List ? List<String>.from(answer) : <String>[];
+        final userList = answer is List ? answer.map((e) => e?.toString() ?? '').toList() : <String>[];
         correctGuess = userList.join(' ') == correctOrder.join(' ');
         break;
 
@@ -380,59 +380,139 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   Widget _buildScrambleExercise(Map<String, dynamic> questionData, Map<String, dynamic> exercise) {
+    final template = List<String>.from(questionData['template'] ?? []);
     final words = List<String>.from(questionData['words'] ?? []);
-    final selected = _selectedOption as List<String>? ?? [];
+    
+    // Retrocompatibilidad: si no hay template, creamos uno básico
+    if (template.isEmpty) {
+      template.addAll(List.filled(words.length, '[BLANK]'));
+    }
+
+    int blanksCount = template.where((e) => e == '[BLANK]').length;
+    
+    List<String?> selected;
+    if (_selectedOption is List) {
+      selected = List<String?>.from(_selectedOption);
+      if (selected.length != blanksCount) {
+        selected = List<String?>.filled(blanksCount, null);
+      }
+    } else {
+      selected = List<String?>.filled(blanksCount, null);
+    }
+    
+    List<String> availableWords = List.from(words);
+    for (var s in selected) {
+      if (s != null) {
+        availableWords.remove(s);
+      }
+    }
+
+    int currentBlankIndex = 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Target area — selected words
+        // Texto con espacios
         Container(
           padding: const EdgeInsets.all(16),
-          constraints: const BoxConstraints(minHeight: 80),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.blue.shade200),
             borderRadius: BorderRadius.circular(12),
             color: Colors.blue.shade50,
           ),
           child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: selected.asMap().entries.map((entry) {
-              return Chip(
-                label: Text(entry.value),
-                onDeleted: _answered ? null : () {
-                  setState(() {
-                    final list = List<String>.from(selected);
-                    list.removeAt(entry.key);
-                    _selectedOption = list;
-                  });
-                },
-              );
+            spacing: 6,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: template.map((item) {
+              if (item == '[BLANK]') {
+                int blankIdx = currentBlankIndex++;
+                String? placedWord = selected[blankIdx];
+                
+                return DragTarget<Map<String, dynamic>>(
+                  onAcceptWithDetails: _answered ? null : (details) {
+                    setState(() {
+                      final data = details.data;
+                      final String draggedWord = data['word'];
+                      final int sourceIndex = data['sourceIndex'];
+                      
+                      final newList = List<String?>.from(selected);
+                      if (sourceIndex != -1) {
+                        newList[sourceIndex] = null;
+                      }
+                      newList[blankIdx] = draggedWord;
+                      _selectedOption = newList;
+                    });
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    bool isHovered = candidateData.isNotEmpty;
+                    
+                    if (placedWord != null) {
+                      return Draggable<Map<String, dynamic>>(
+                        data: {'word': placedWord, 'sourceIndex': blankIdx},
+                        feedback: Material(color: Colors.transparent, child: Chip(label: Text(placedWord), elevation: 4)),
+                        childWhenDragging: Opacity(opacity: 0.3, child: Chip(label: Text(placedWord))),
+                        child: GestureDetector(
+                          onTap: _answered ? null : () {
+                             setState(() {
+                                final newList = List<String?>.from(selected);
+                                newList[blankIdx] = null;
+                                _selectedOption = newList;
+                             });
+                          },
+                          child: Chip(
+                            label: Text(placedWord),
+                            backgroundColor: _answered 
+                                ? (exercise['answer_data']['correct_order'][blankIdx] == placedWord ? Colors.green : Colors.red)
+                                : Colors.blue.shade100,
+                          ),
+                        ),
+                      );
+                    } else {
+                      return Container(
+                        width: 50,
+                        height: 30,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        decoration: BoxDecoration(
+                          border: Border(bottom: BorderSide(color: isHovered ? Colors.blue : Colors.grey.shade400, width: 2)),
+                          color: isHovered ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+                        ),
+                      );
+                    }
+                  },
+                );
+              } else {
+                return Text(item, style: const TextStyle(fontSize: 18));
+              }
             }).toList(),
           ),
         ),
         const Divider(height: 30),
-        // Source area — available words
+        // Banco de palabras
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: words.asMap().entries.map((entry) {
-            // Count how many times this word appears in selected at this index
-            final usedCount = selected.where((w) => w == entry.value).length;
-            final availableCount = words.where((w) => w == entry.value).length;
-            final isUsedUp = usedCount >= availableCount;
-            
-            return ActionChip(
-              label: Text(entry.value),
-              backgroundColor: isUsedUp ? Colors.grey.shade300 : null,
-              onPressed: _answered || isUsedUp ? null : () {
-                setState(() {
-                  final list = List<String>.from(selected);
-                  list.add(entry.value);
-                  _selectedOption = list;
-                });
-              },
+          children: availableWords.map((word) {
+            return Draggable<Map<String, dynamic>>(
+              data: {'word': word, 'sourceIndex': -1},
+              feedback: Material(color: Colors.transparent, child: Chip(label: Text(word), elevation: 4)),
+              childWhenDragging: Opacity(opacity: 0.3, child: Chip(label: Text(word))),
+              child: ActionChip(
+                label: Text(word),
+                backgroundColor: Colors.white,
+                shape: StadiumBorder(side: BorderSide(color: Colors.grey.shade300)),
+                onPressed: _answered ? null : () {
+                   // Si toca una carta, se va al primer espacio vacío automáticamente
+                   int firstEmpty = selected.indexOf(null);
+                   if (firstEmpty != -1) {
+                      setState(() {
+                         final newList = List<String?>.from(selected);
+                         newList[firstEmpty] = word;
+                         _selectedOption = newList;
+                      });
+                   }
+                },
+              ),
             );
           }).toList(),
         ),

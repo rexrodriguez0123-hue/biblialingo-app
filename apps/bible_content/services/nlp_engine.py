@@ -253,36 +253,48 @@ def _generate_selection(verse_text, doc, key_tokens):
 
 def _generate_scramble(verse_text, doc, key_tokens):
     """
-    Sentence scramble: reorder the words.
-    Uses the full verse text as requested by the user, without truncating.
-
-    question_data: {"words": ["creó", "principio", "Dios", "el", "En"]}
-    answer_data:   {"correct_order": ["En", "el", "principio", "creó", "Dios"]}
+    Drag and drop fill-in-the-blanks style.
+    Replaces up to 7 words with blanks.
     """
-    # Use all words from the verse
-    words = [tok.text for tok in doc if tok.is_alpha or tok.text in '.,;:']
-
-    if len(words) < 3:
+    # Split using spaces to keep punctuation attached to words
+    raw_words = verse_text.split()
+    
+    if len(raw_words) < 3:
         return None
-
-    correct_order = list(words)
-    scrambled = list(words)
-
-    # Ensure it's actually scrambled
+        
+    num_blanks = min(7, len(raw_words) - 1)
+    if num_blanks < 1:
+        num_blanks = 1
+        
+    # Pick indices to blank out
+    indices_to_blank = sorted(random.sample(range(len(raw_words)), num_blanks))
+    
+    template = []
+    correct_words = []
+    
+    for i, word in enumerate(raw_words):
+        if i in indices_to_blank:
+            template.append("[BLANK]")
+            correct_words.append(word)
+        else:
+            template.append(word)
+            
+    scrambled = list(correct_words)
     attempts = 0
-    while scrambled == correct_order and attempts < 10:
+    while scrambled == correct_words and attempts < 10:
         random.shuffle(scrambled)
         attempts += 1
-
+        
     return {
         'exercise_type': 'scramble',
         'question_data': {
+            'template': template,
             'words': scrambled,
         },
         'answer_data': {
-            'correct_order': correct_order,
+            'correct_order': correct_words,
         },
-        'difficulty': 2 if len(words) > 7 else 1,
+        'difficulty': 2 if len(raw_words) > 7 else 1,
     }
 
 

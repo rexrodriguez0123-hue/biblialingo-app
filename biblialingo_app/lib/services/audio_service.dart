@@ -19,12 +19,27 @@ class AudioService {
   Future<void> init() async {
     if (_initialized) return;
     try {
-      await _correctPlayer.setAsset('assets/audio/correct.wav');
-      await _incorrectPlayer.setAsset('assets/audio/incorrect.wav');
+      // Crear players
+      _correctPlayer = AudioPlayer();
+      _incorrectPlayer = AudioPlayer();
+      
+      // Intentar precarga con timeout corto para evitar bloqueos
+      try {
+        await Future.wait([
+          _correctPlayer.setAsset('assets/audio/correct.wav').timeout(const Duration(seconds: 5)),
+          _incorrectPlayer.setAsset('assets/audio/incorrect.wav').timeout(const Duration(seconds: 5)),
+        ]);
+      } catch (e) {
+        print('⚠️ Error precargando assets: $e');
+        // Continuar aunque falle la precarga
+      }
+      
       _initialized = true;
       print('✅ AudioService inicializado correctamente');
     } catch (e) {
       print('❌ Error inicializando AudioService: $e');
+      // No relanzar error - dejar que continue sin audio
+      _initialized = true; // Marcar como inicializado de todas formas
     }
   }
 
@@ -34,10 +49,11 @@ class AudioService {
       if (!_initialized) await init();
       // Resetear y reproducir desde el principio
       await _correctPlayer.seek(Duration.zero);
-      await _correctPlayer.play();
+      await _correctPlayer.play().timeout(const Duration(seconds: 3));
       print('🔊 Reproduciendo sonido correcto');
     } catch (e) {
-      print('❌ Error reproduciendo sonido correcto: $e');
+      print('⚠️ Error reproduciendo sonido correcto (ignorado): $e');
+      // No relanzar error - la app continúa sin sonido
     }
   }
 
@@ -47,10 +63,11 @@ class AudioService {
       if (!_initialized) await init();
       // Resetear y reproducir desde el principio
       await _incorrectPlayer.seek(Duration.zero);
-      await _incorrectPlayer.play();
+      await _incorrectPlayer.play().timeout(const Duration(seconds: 3));
       print('🔊 Reproduciendo sonido incorrecto');
     } catch (e) {
-      print('❌ Error reproduciendo sonido incorrecto: $e');
+      print('⚠️ Error reproduciendo sonido incorrecto (ignorado): $e');
+      // No relanzar error - la app continúa sin sonido
     }
   }
 

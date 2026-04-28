@@ -12,8 +12,16 @@ import 'services/api_service.dart';
 import 'services/audio_service.dart';
 
 void main() async {
-  // Inicializar AudioService al iniciar la app
-  await AudioService().init();
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar AudioService de forma segura (no debe bloquear la app)
+  try {
+    await AudioService().init();
+    print('✅ AudioService inicializado exitosamente');
+  } catch (e) {
+    print('⚠️ Error inicializando AudioService (continuando sin sonido): $e');
+    // Continuamos aunque falle - los sonidos simplemente no sonarán
+  }
   
   runApp(
     MultiProvider(

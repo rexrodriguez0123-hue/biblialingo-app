@@ -27,5 +27,5 @@ python fix_genesis_1.py
 echo "Creating superuser if it doesn't exist..."
 python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'rexrodriguez0123@gmail.com', 'rexbiblialingo.')"
 
-echo "Clearing old scramble exercises to force JIT regeneration..."
-python manage.py shell -c "from apps.exercises.models import Exercise; Exercise.objects.filter(exercise_type='scramble').delete()"
+echo "Clearing ALL old exercises to force complete JIT regeneration..."
+python manage.py shell -c "from apps.exercises.models import Exercise; Exercise.objects.all().delete()"

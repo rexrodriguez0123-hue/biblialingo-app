@@ -36,6 +36,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   // Tracking for stats
   int _correctCount = 0;
   int _totalAttempted = 0;
+  bool _isDialogOpen = false; // Track if popup is open to prevent back button dismissal
 
   @override
   void initState() {
@@ -163,6 +164,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
       // Play correct sound
       _audioService.playCorrectSound();
       
+      setState(() => _isDialogOpen = true);
+      
       showGeneralDialog(
         context: context,
         barrierDismissible: false,
@@ -171,6 +174,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         pageBuilder: (context, anim1, anim2) {
           return SuccessPopup(
             onNext: () {
+              setState(() => _isDialogOpen = false);
               Navigator.pop(context); // Close dialog
               _nextQuestion();        // Go to next
             },
@@ -195,6 +199,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
       
       // Si se acabaron los corazones, mostrar popup especial
       if (remainingHearts == 0) {
+        setState(() => _isDialogOpen = true);
+        
         showGeneralDialog(
           context: context,
           barrierDismissible: false,
@@ -204,10 +210,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
             return NoHeartsPopup(
               timeUntilRegeneration: _calculateTimeUntilRegen(),
               onRecharge: () {
+                setState(() => _isDialogOpen = false);
                 Navigator.pop(context);
                 Navigator.pushNamed(context, '/shop');
               },
               onGoHome: () {
+                setState(() => _isDialogOpen = false);
                 Navigator.pop(context);
                 Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
               },
@@ -228,6 +236,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
         );
       } else {
         // Mostrar popup de error normal si aún hay corazones
+        setState(() => _isDialogOpen = true);
+        
         showGeneralDialog(
           context: context,
           barrierDismissible: false,
@@ -248,6 +258,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
               correctAnswer: correctText,
               remainingHearts: remainingHearts,
               onNext: () {
+                setState(() => _isDialogOpen = false);
                 Navigator.pop(context);
                 _nextQuestion();
               },
@@ -375,14 +386,22 @@ class _PracticeScreenState extends State<PracticeScreen> {
     // Progress
     double progress = (_currentIndex + 1) / _exercises.length;
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
+    return PopScope(
+      canPop: !_isDialogOpen, // Prevent back button if dialog is open
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          // Only pop if allowed by canPop
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: LinearProgressIndicator(value: progress, minHeight: 10, borderRadius: BorderRadius.circular(5)),
         ),
-        title: LinearProgressIndicator(value: progress, minHeight: 10, borderRadius: BorderRadius.circular(5)),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -417,6 +436,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
              // Continue Button removed since dialog handles progression
           ],
         ),
+      ),
       ),
     );
   }

@@ -9,8 +9,12 @@ import 'screens/main_screen.dart';
 import 'screens/practice_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/api_service.dart';
+import 'services/audio_service.dart';
 
-void main() {
+void main() async {
+  // Inicializar AudioService al iniciar la app
+  await AudioService().init();
+  
   runApp(
     MultiProvider(
       providers: [

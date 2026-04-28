@@ -493,24 +493,33 @@ class _HeartTimerWidgetState extends State<HeartTimerWidget> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       final userState = context.read<UserState>();
-      if (userState.hearts >= 5 || userState.lastHeartRegen == null) {
+      
+      if (userState.hearts >= 5) {
         if (_timeString.isNotEmpty) {
-          setState(() {
-            _timeString = "";
-          });
+          setState(() => _timeString = "");
+        }
+        return;
+      }
+      
+      if (userState.lastHeartRegen == null) {
+        if (_timeString != "Esperando servidor...") {
+          setState(() => _timeString = "Esperando servidor...");
         }
         return;
       }
 
       DateTime? lastRegen = DateTime.tryParse(userState.lastHeartRegen!);
-      if (lastRegen == null) return;
+      if (lastRegen == null) {
+        if (_timeString != "Error de fecha") {
+          setState(() => _timeString = "Error de fecha");
+        }
+        return;
+      }
       
-      // Calculate next regen
-      DateTime nextRegen = lastRegen.add(const Duration(hours: 4));
+      DateTime nextRegen = lastRegen.toUtc().add(const Duration(hours: 4));
       Duration remaining = nextRegen.difference(DateTime.now().toUtc());
 
       if (remaining.isNegative) {
-        // Time is up, simulate local regeneration
         userState.updateStats(
           hearts: userState.hearts + 1, 
           lastHeartRegen: nextRegen.toUtc().toIso8601String()
@@ -564,3 +573,4 @@ class _HeartTimerWidgetState extends State<HeartTimerWidget> {
     );
   }
 }
+

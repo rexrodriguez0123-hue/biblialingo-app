@@ -39,6 +39,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             'gems': userData['profile']['gems'],
             'streak': userData['profile']['streak_days'],
             'totalXp': userData['profile']['total_xp'],
+            'lastHeartRegen': userData['profile']['last_heart_regen'],
             'token': token,
           });
           Navigator.pushReplacementNamed(context, '/dashboard');
@@ -60,28 +61,30 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     setState(() => _isGoogleLoading = true);
     
     try {
-      // Reemplaza esto con tu Web Client ID real de Google Cloud / Firebase
-      // Este debe ser exactamente el mismo GOOGLE_CLIENT_ID que usas en el backend de Django
       const webClientId = '697027944347-sbcolvj44n7ie3395lrp6lsm7fjakrer.apps.googleusercontent.com';
 
-      final GoogleSignIn googleSignIn = GoogleSignIn(
+      final googleSignIn = GoogleSignIn.instance;
+      await googleSignIn.initialize(
         serverClientId: webClientId,
-        scopes: ['email', 'profile'],
       );
 
       // Force account selection to avoid auto-login issues if you want to switch accounts
       await googleSignIn.signOut(); 
       
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
-        // The user canceled the sign-in
+      GoogleSignInAccount? googleUser;
+      try {
+        googleUser = await googleSignIn.authenticate(
+          scopeHint: ['email', 'profile'],
+        );
+      } catch (e) {
+        // The user canceled the sign-in or other auth error
         if (mounted) setState(() => _isGoogleLoading = false);
         return;
       }
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
+
 
       if (idToken == null) {
         throw Exception('No se pudo obtener el ID Token de Google.');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
+import '../services/audio_service.dart';
 import '../main.dart';
 import '../widgets/success_popup.dart';
 import '../widgets/error_popup.dart';
@@ -18,6 +19,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
   bool _isLoading = true;
   List<dynamic> _exercises = [];
   int _currentIndex = 0;
+  
+  // Audio service for feedback sounds
+  final AudioService _audioService = AudioService();
   
   // Para evitar repeticiones infinitas
   final Set<int> _repeatedExerciseIds = {};
@@ -41,6 +45,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   @override
   void dispose() {
     _textController.dispose();
+    _audioService.dispose();
     super.dispose();
   }
 
@@ -154,6 +159,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
     // Provide feedback
     if (correctGuess) {
+      // Play correct sound
+      _audioService.playCorrectSound();
+      
       showGeneralDialog(
         context: context,
         barrierDismissible: false,
@@ -181,6 +189,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
         },
       );
     } else {
+      // Play incorrect sound
+      _audioService.playIncorrectSound();
+      
       showGeneralDialog(
         context: context,
         barrierDismissible: false,

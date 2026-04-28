@@ -8,6 +8,11 @@ Supports 5 exercise types:
   - scramble: Reorder scrambled words of a verse
   - selection: Multiple choice (select the correct word)
   - true_false: True or false statement about the verse
+
+VALIDACIONES:
+- Detecta y rechaza ejercicios con texto corrupto (ej: "morirás; rás")
+- Valida que el texto esté limpio (sin caracteres especiales)
+- Evita ejercicios con saltos abruptos de línea
 """
 import random
 import re
@@ -15,6 +20,16 @@ import spacy
 
 # Load SpaCy model (lazy singleton)
 _nlp = None
+
+# Patrones de corrupción a detectar
+_CORRUPTION_PATTERNS = [
+    r';\s*[a-záéíóúñ]{1,3}(?=[\s.,;:!?)\]¿¡]|$)',  # "morirás; rás"
+    r'(?:mo|rá|sé|la|el|de)-\s*(?=[a-z])',          # "ex- pansión"
+    r'ĳ',                                            # ligadura ĳ aún presente
+    r'[a-záéíóúñ]\s{2,}[a-záéíóúñ]',               # espacios dobles entre palabras
+    r'del$',                                         # versículos incompletos (ej: "...tomó del")
+    r'que\s+(?:el|la)\s*$',                         # frase sin terminar
+]
 
 
 def get_nlp():
@@ -25,13 +40,83 @@ def get_nlp():
     return _nlp
 
 
+def _is_text_corrupted(text):
+    """
+    Detecta si un texto está corrupto basándose en patrones conocidos.
+    
+    Returns:
+        bool: True si el texto tiene signos de corrupción
+    """
+    if not text:
+        return False
+    
+    for pattern in _CORRUPTION_PATTERNS:
+        if re.search(pattern, text, re.IGNORECASE):
+            return True
+    
+    return False
+
+
+def _is_exercise_valid(exercise):
+    """
+    Valida que un ejercicio no contenga texto corrupto.
+    
+    Args:
+        exercise (dict): Diccionario de ejercicio con exercise_type, question_data, answer_data
+        
+    Returns:
+        bool: True si el ejercicio es válido
+    """
+    if not exercise:
+        return False
+    
+    try:
+        # Concatenar todos los textos del ejercicio
+        texts_to_check = []
+        
+        if 'question_data' in exercise:
+            qd = exercise['question_data']
+            if isinstance(qd, dict):
+                texts_to_check.extend([
+                    qd.get('text', ''),
+                    qd.get('context', ''),
+                    qd.get('statement', ''),
+                    str(qd.get('template', '')),
+                ])
+        
+        if 'answer_data' in exercise:
+            ad = exercise['answer_data']
+            if isinstance(ad, dict):
+                texts_to_check.extend([
+                    ad.get('correct', ''),
+                    ad.get('explanation', ''),
+                ])
+        
+        # Validar que ningún texto esté corrupto
+        combined_text = ' '.join(str(t) for t in texts_to_check if t)
+        
+        if _is_text_corrupted(combined_text):
+            return False
+        
+        return True
+        
+    except Exception:
+        return False
+
+
 def generate_exercises_for_verse(verse_text, verse_id=None, num_exercises=2):
     """
     Generate a list of exercise dicts from a single verse.
 
     Returns list of dicts with keys:
         exercise_type, question_data, answer_data, difficulty
+    
+    NOTA: Rechaza automáticamente ejercicios que contienen texto corrupto.
     """
+    # Validar que el versículo en sí no esté corrupto
+    if _is_text_corrupted(verse_text):
+        return []
+    
     nlp = get_nlp()
     doc = nlp(verse_text)
 
@@ -71,7 +156,8 @@ def generate_exercises_for_verse(verse_text, verse_id=None, num_exercises=2):
         generator = generators[gen_index % len(generators)]
         try:
             ex = generator(verse_text, doc, key_tokens)
-            if ex and ex not in exercises:
+            # Validar que el ejercicio no sea corrupto
+            if ex and ex not in exercises and _is_exercise_valid(ex):
                 exercises.append(ex)
         except Exception:
             pass
@@ -92,6 +178,8 @@ def generate_exercises_for_lesson(verses, exercises_per_verse=2):
 
     Returns:
         list of dicts ready to create Exercise objects
+    
+    NOTA: Valida automáticamente que los ejercicios no contengan texto corrupto.
     """
     nlp = get_nlp()
     all_exercises = []
@@ -114,6 +202,10 @@ def generate_exercises_for_lesson(verses, exercises_per_verse=2):
 
     for verse_id, verse_number, verse_text in verses:
         if not verse_text or len(verse_text.split()) < 4:
+            continue
+        
+        # Saltar versículos corruptos
+        if _is_text_corrupted(verse_text):
             continue
 
         doc = nlp(verse_text)
@@ -142,7 +234,8 @@ def generate_exercises_for_lesson(verses, exercises_per_verse=2):
             attempts += 1
             try:
                 ex = gen(verse_text, doc, key_tokens)
-                if ex:
+                # Validar que el ejercicio no sea corrupto
+                if ex and _is_exercise_valid(ex):
                     # Enrich selection exercises with cross-verse distractors
                     if ex['exercise_type'] == 'selection' and all_key_words:
                         correct = ex['answer_data']['correct']

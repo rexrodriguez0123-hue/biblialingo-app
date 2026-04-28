@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 
 class ErrorPopup extends StatefulWidget {
   final String correctAnswer;
+  final int remainingHearts;
   final VoidCallback onNext;
 
   const ErrorPopup({
     super.key,
     required this.correctAnswer,
+    required this.remainingHearts,
     required this.onNext,
   });
 
@@ -223,6 +225,32 @@ class _ErrorPopupState extends State<ErrorPopup> with TickerProviderStateMixin {
                             ),
                           ),
                           const TextSpan(text: '\n¡No te preocupes, cada error es una oportunidad para aprender!'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Contenedor de Vidas Restantes
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.red.shade100),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.favorite, color: Colors.red.shade400, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Te quedan ${widget.remainingHearts} vidas',
+                            style: TextStyle(
+                              color: Colors.red.shade700,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ),

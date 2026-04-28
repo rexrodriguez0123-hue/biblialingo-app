@@ -18,6 +18,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
   List<dynamic> _exercises = [];
   int _currentIndex = 0;
   
+  // Para evitar repeticiones infinitas
+  final Set<int> _repeatedExerciseIds = {};
+  
   // State for current question
   bool _answered = false;
   dynamic _selectedOption; // String for cloze/selection, List<String> for scramble
@@ -115,8 +118,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
         correctGuess = false;
     }
 
-    _totalAttempted++;
-    if (correctGuess) _correctCount++;
+    final isRepeat = currentExercise['is_repeat'] == true;
+
+    if (!isRepeat) {
+      _totalAttempted++;
+      if (correctGuess) _correctCount++;
+    }
 
     setState(() {
       _answered = true;
@@ -124,8 +131,25 @@ class _PracticeScreenState extends State<PracticeScreen> {
       _selectedOption = answer;
     });
 
-    // Submit answer to backend
-    _submitToBackend(currentExercise, correctGuess);
+    // Enviar al backend solo si es el primer intento
+    if (!isRepeat) {
+      _submitToBackend(currentExercise, correctGuess);
+    }
+
+    // Calcular corazones restantes inmediatamente (antes de la respuesta async)
+    int remainingHearts = context.read<UserState>().hearts;
+    if (!correctGuess && !isRepeat && remainingHearts > 0) {
+      remainingHearts -= 1;
+      
+      // Agregar el ejercicio al final de la cola para repetir
+      final exerciseId = currentExercise['id'];
+      if (!_repeatedExerciseIds.contains(exerciseId)) {
+        _repeatedExerciseIds.add(exerciseId);
+        final repeatedExercise = Map<String, dynamic>.from(currentExercise);
+        repeatedExercise['is_repeat'] = true;
+        _exercises.add(repeatedExercise);
+      }
+    }
 
     // Provide feedback
     if (correctGuess) {
@@ -174,6 +198,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
           return ErrorPopup(
             correctAnswer: correctText,
+            remainingHearts: remainingHearts,
             onNext: () {
               Navigator.pop(context);
               _nextQuestion();

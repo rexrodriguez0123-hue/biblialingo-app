@@ -6,6 +6,7 @@ import '../main.dart';
 import '../widgets/success_popup.dart';
 import '../widgets/error_popup.dart';
 import '../widgets/game_over_popup.dart';
+import '../widgets/no_hearts_popup.dart';
 
 class PracticeScreen extends StatefulWidget {
   final int lessonId;
@@ -192,44 +193,109 @@ class _PracticeScreenState extends State<PracticeScreen> {
       // Play incorrect sound
       _audioService.playIncorrectSound();
       
-      showGeneralDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: Colors.black.withOpacity(0.6),
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (context, anim1, anim2) {
-          String correctText = 'Respuesta';
-          if (type == 'true_false') {
-            correctText = answerData['correct'] == true ? 'Verdadero' : 'Falso';
-            if (answerData['explanation'] != null) {
-              correctText += '\n(${answerData['explanation']})';
+      // Si se acabaron los corazones, mostrar popup especial
+      if (remainingHearts == 0) {
+        showGeneralDialog(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: Colors.black.withOpacity(0.6),
+          transitionDuration: const Duration(milliseconds: 300),
+          pageBuilder: (context, anim1, anim2) {
+            return NoHeartsPopup(
+              timeUntilRegeneration: _calculateTimeUntilRegen(),
+              onRecharge: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/shop');
+              },
+              onGoHome: () {
+                Navigator.pop(context);
+                Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+              },
+            );
+          },
+          transitionBuilder: (context, anim1, anim2, child) {
+            return FadeTransition(
+              opacity: anim1,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.8, end: 1.0).animate(CurvedAnimation(
+                  parent: anim1,
+                  curve: Curves.easeOutBack,
+                )),
+                child: child,
+              ),
+            );
+          },
+        );
+      } else {
+        // Mostrar popup de error normal si aún hay corazones
+        showGeneralDialog(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: Colors.black.withOpacity(0.6),
+          transitionDuration: const Duration(milliseconds: 300),
+          pageBuilder: (context, anim1, anim2) {
+            String correctText = 'Respuesta';
+            if (type == 'true_false') {
+              correctText = answerData['correct'] == true ? 'Verdadero' : 'Falso';
+              if (answerData['explanation'] != null) {
+                correctText += '\n(${answerData['explanation']})';
+              }
+            } else {
+              correctText = answerData['correct']?.toString() ?? answerData['correct_order']?.join(' ') ?? 'Respuesta';
             }
-          } else {
-            correctText = answerData['correct']?.toString() ?? answerData['correct_order']?.join(' ') ?? 'Respuesta';
-          }
 
-          return ErrorPopup(
-            correctAnswer: correctText,
-            remainingHearts: remainingHearts,
-            onNext: () {
-              Navigator.pop(context);
-              _nextQuestion();
-            },
-          );
-        },
-        transitionBuilder: (context, anim1, anim2, child) {
-          return FadeTransition(
-            opacity: anim1,
-            child: ScaleTransition(
-              scale: Tween<double>(begin: 0.8, end: 1.0).animate(CurvedAnimation(
-                parent: anim1,
-                curve: Curves.easeOutBack,
-              )),
-              child: child,
-            ),
-          );
-        },
-      );
+            return ErrorPopup(
+              correctAnswer: correctText,
+              remainingHearts: remainingHearts,
+              onNext: () {
+                Navigator.pop(context);
+                _nextQuestion();
+              },
+            );
+          },
+          transitionBuilder: (context, anim1, anim2, child) {
+            return FadeTransition(
+              opacity: anim1,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.8, end: 1.0).animate(CurvedAnimation(
+                  parent: anim1,
+                  curve: Curves.easeOutBack,
+                )),
+                child: child,
+              ),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  // Calcular tiempo hasta la próxima regeneración de corazón
+  String _calculateTimeUntilRegen() {
+    final userState = context.read<UserState>();
+    final lastRegenStr = userState.lastHeartRegen;
+    
+    if (lastRegenStr == null) {
+      return '4:00:00'; // Default si no hay fecha
+    }
+    
+    try {
+      final lastRegen = DateTime.parse(lastRegenStr);
+      final nextRegen = lastRegen.add(const Duration(hours: 4));
+      final now = DateTime.now();
+      
+      if (now.isAfter(nextRegen)) {
+        return '0:00:00'; // Ya se regeneró
+      }
+      
+      final diff = nextRegen.difference(now);
+      final hours = diff.inHours;
+      final minutes = diff.inMinutes.remainder(60);
+      final seconds = diff.inSeconds.remainder(60);
+      
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '4:00:00';
     }
   }
 

@@ -162,8 +162,18 @@ class _PracticeScreenState extends State<PracticeScreen> {
         barrierColor: Colors.black.withOpacity(0.6),
         transitionDuration: const Duration(milliseconds: 300),
         pageBuilder: (context, anim1, anim2) {
+          String correctText = 'Respuesta';
+          if (type == 'true_false') {
+            correctText = answerData['correct'] == true ? 'Verdadero' : 'Falso';
+            if (answerData['explanation'] != null) {
+              correctText += '\n(${answerData['explanation']})';
+            }
+          } else {
+            correctText = answerData['correct']?.toString() ?? answerData['correct_order']?.join(' ') ?? 'Respuesta';
+          }
+
           return ErrorPopup(
-            correctAnswer: answerData['correct'] ?? answerData['correct_order']?.join(' ') ?? 'Respuesta',
+            correctAnswer: correctText,
             onNext: () {
               Navigator.pop(context);
               _nextQuestion();

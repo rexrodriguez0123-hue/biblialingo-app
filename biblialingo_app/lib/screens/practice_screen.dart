@@ -360,7 +360,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
         gemsEarned: _correctCount * 2, // Gana 2 gemas por respuesta correcta
         onNext: () {
           Navigator.pop(ctx); // Cerrar popup
-          Navigator.pop(context); // Volver al Dashboard
+          // Navegar a /main asegurando que existe la ruta
+          Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
         },
       ),
     );
@@ -398,7 +399,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              // Navegar a /main en lugar de solo pop (que causa pantalla negra)
+              Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+            },
           ),
           title: LinearProgressIndicator(value: progress, minHeight: 10, borderRadius: BorderRadius.circular(5)),
         ),

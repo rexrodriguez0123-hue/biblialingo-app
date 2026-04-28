@@ -42,3 +42,9 @@ android {
 flutter {
     source = "../.."
 }
+
+tasks.whenTaskAdded {
+    if (name == "compileReleaseArtProfile") {
+        enabled = false
+    }
+}

@@ -23,3 +23,6 @@ python manage.py shell -c "from apps.bible_content.models import Book; exit(0) i
 
 echo "Applying specific text corrections for Genesis 1..."
 python fix_genesis_1.py
+
+echo "Creating superuser if it doesn't exist..."
+python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'rexrodriguez0123@gmail.com', 'rexbiblialingo.')"

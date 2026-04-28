@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../main.dart';
+import '../widgets/success_popup.dart';
 
 class PracticeScreen extends StatefulWidget {
   final int lessonId;
@@ -125,14 +126,43 @@ class _PracticeScreenState extends State<PracticeScreen> {
     // Submit answer to backend
     _submitToBackend(currentExercise, correctGuess);
 
-    // Show snackbar feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(correctGuess ? '¡Correcto! 🎉' : 'Incorrecto 😞. La respuesta era: ${answerData['correct']}'),
-        backgroundColor: correctGuess ? Colors.green : Colors.red,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    // Provide feedback
+    if (correctGuess) {
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withOpacity(0.6),
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (context, anim1, anim2) {
+          return SuccessPopup(
+            onNext: () {
+              Navigator.pop(context); // Close dialog
+              _nextQuestion();        // Go to next
+            },
+          );
+        },
+        transitionBuilder: (context, anim1, anim2, child) {
+          return FadeTransition(
+            opacity: anim1,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.8, end: 1.0).animate(CurvedAnimation(
+                parent: anim1,
+                curve: Curves.easeOutBack,
+              )),
+              child: child,
+            ),
+          );
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Incorrecto 😞. La respuesta era: ${answerData['correct'] ?? answerData['correct_order']?.join(' ')}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   Future<void> _submitToBackend(Map<String, dynamic> exercise, bool isCorrect) async {
@@ -261,11 +291,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
                  child: const Text('Comprobar', style: TextStyle(fontSize: 18, color: Colors.white)),
                ),
                
-             // Continue Button (after answering)
-             if (_answered)
+             // Continue Button (after answering, only if incorrect)
+             if (_answered && !_isCorrect)
                ElevatedButton(
                  style: ElevatedButton.styleFrom(
-                   backgroundColor: _isCorrect ? Colors.green : Colors.blue,
+                   backgroundColor: Colors.red,
                    padding: const EdgeInsets.symmetric(vertical: 15),
                  ),
                  onPressed: _nextQuestion,

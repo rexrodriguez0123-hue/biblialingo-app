@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../main.dart';
 import '../widgets/success_popup.dart';
+import '../widgets/error_popup.dart';
 
 class PracticeScreen extends StatefulWidget {
   final int lessonId;
@@ -155,12 +156,32 @@ class _PracticeScreenState extends State<PracticeScreen> {
         },
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Incorrecto 😞. La respuesta era: ${answerData['correct'] ?? answerData['correct_order']?.join(' ')}'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withOpacity(0.6),
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (context, anim1, anim2) {
+          return ErrorPopup(
+            correctAnswer: answerData['correct'] ?? answerData['correct_order']?.join(' ') ?? 'Respuesta',
+            onNext: () {
+              Navigator.pop(context);
+              _nextQuestion();
+            },
+          );
+        },
+        transitionBuilder: (context, anim1, anim2, child) {
+          return FadeTransition(
+            opacity: anim1,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.8, end: 1.0).animate(CurvedAnimation(
+                parent: anim1,
+                curve: Curves.easeOutBack,
+              )),
+              child: child,
+            ),
+          );
+        },
       );
     }
   }
@@ -291,19 +312,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                  child: const Text('Comprobar', style: TextStyle(fontSize: 18, color: Colors.white)),
                ),
                
-             // Continue Button (after answering, only if incorrect)
-             if (_answered && !_isCorrect)
-               ElevatedButton(
-                 style: ElevatedButton.styleFrom(
-                   backgroundColor: Colors.red,
-                   padding: const EdgeInsets.symmetric(vertical: 15),
-                 ),
-                 onPressed: _nextQuestion,
-                 child: Text(
-                   _currentIndex < _exercises.length - 1 ? 'Continuar' : 'Finalizar',
-                   style: const TextStyle(fontSize: 18, color: Colors.white),
-                 ),
-               ),
+             // Continue Button removed since dialog handles progression
           ],
         ),
       ),

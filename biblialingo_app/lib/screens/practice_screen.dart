@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../main.dart';
 import '../widgets/success_popup.dart';
 import '../widgets/error_popup.dart';
+import '../widgets/game_over_popup.dart';
 
 class PracticeScreen extends StatefulWidget {
   final int lessonId;
@@ -262,28 +263,17 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   void _finishLesson() {
-    final percentage = _totalAttempted > 0
-        ? (_correctCount / _totalAttempted * 100).round()
-        : 0;
-
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text('¡Lección Completada! 🏆'),
-        content: Text(
-          '$_correctCount/$_totalAttempted respuestas correctas ($percentage%)\n\n'
-          '${percentage >= 80 ? "¡Excelente trabajo!" : percentage >= 50 ? "¡Buen intento!" : "¡Sigue practicando!"}',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Back to dashboard
-            },
-            child: const Text('Continuar'),
-          )
-        ],
+      builder: (ctx) => GameOverPopup(
+        correctCount: _correctCount,
+        totalAttempted: _totalAttempted,
+        gemsEarned: _correctCount * 2, // Gana 2 gemas por respuesta correcta
+        onNext: () {
+          Navigator.pop(ctx); // Cerrar popup
+          Navigator.pop(context); // Volver al Dashboard
+        },
       ),
     );
   }

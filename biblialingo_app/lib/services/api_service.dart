@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 class ApiService {
-  // Cambia esto a tu URL de Render una vez desplegado:
-  static const String baseUrl = 'https://biblialingo-app.onrender.com/api/v1';
-  // Para desarrollo local, descomenta la siguiente línea y comenta la anterior:
-  // static const String baseUrl = 'http://192.168.1.8:8000/api/v1';
+  // Usa la configuración centralizada en api_config.dart
+  static String get baseUrl => ApiConfig.apiBaseUrl;
 
   // Token de autenticación — se establece al hacer login/register
   String? _authToken;
@@ -246,5 +245,24 @@ class ApiService {
           { 'id': i, 'title': 'Génesis $i', 'order': i, 'is_unlocked': false, 'progress': 0.0 },
       ]
     };
+  }
+
+  // =========================================================================
+  // GAMIFICATION, SOCIAL & RECOVERY (NUEVOS ENDPOINTS CORE)
+  // =========================================================================
+
+  Future<Map<String, dynamic>> requestPasswordReset(String email) async {
+    return await _postRequest('/users/password_reset/', {
+      'email': email,
+    });
+  }
+
+  Future<Map<String, dynamic>> checkLevelUp() async {
+    return await _postRequest('/users/check_level_up/', {}, withAuth: true);
+  }
+
+  Future<List<dynamic>> getLeaderboard() async {
+    final data = await _getRequest('/users/leaderboard/', withAuth: true);
+    return data['leaderboard'] ?? [];
   }
 }

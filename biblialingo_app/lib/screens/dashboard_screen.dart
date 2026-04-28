@@ -6,8 +6,30 @@ import '../main.dart';
 import 'dart:math' as math;
 import 'dart:async';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late Future<Map<String, dynamic>> _curriculumFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurriculum();
+  }
+
+  void _loadCurriculum() {
+    _curriculumFuture = context.read<ApiService>().fetchCurriculum();
+  }
+
+  Future<void> _handleRefresh() async {
+    setState(() => _loadCurriculum());
+    try { await _curriculumFuture; } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,22 +44,52 @@ class DashboardScreen extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildTopStat(Icons.menu_book, 'RVR1960', Colors.grey),
-            _buildTopStat(Icons.local_fire_department, '${userState.streak}', Colors.blue),
-            _buildTopStat(Icons.hexagon, '${userState.gems}', Colors.orange),
+            _buildTopStat(Icons.menu_book, 'RVR1960', Colors.grey.shade700),
+            _buildTopStat(Icons.local_fire_department, '${userState.streak}', const Color(0xFF0277BD)),
+            _buildTopStat(Icons.hexagon, '${userState.gems}', Colors.orange.shade800),
             const HeartTimerWidget(),
           ],
         ),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
-        future: context.read<ApiService>().fetchCurriculum(),
+        future: _curriculumFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-             // Fallback to offline/dummy data if error, or show error
-            return Center(child: Text('Error cargando curso: ${snapshot.error}'));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.wifi_off, size: 60, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Sin Conexión',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No pudimos cargar tu progreso. Revisa tu internet e inténtalo de nuevo.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => setState(() => _loadCurriculum()),
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      label: const Text('Reintentar', style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0277BD),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
 
           final data = snapshot.data ?? {};
@@ -68,7 +120,7 @@ class DashboardScreen extends StatelessWidget {
               title: lesson['title'],
               subtitle: 'Lección ${lesson['order']}', // Or fetch verse range
               icon: _getIconForLesson(lesson['title']),
-              color: isUnlocked ? const Color(0xFF4AC3F5) : Colors.grey.shade400,
+            color: isUnlocked ? const Color(0xFF0277BD) : Colors.grey.shade600,
               alignment: align,
               isUnlocked: isUnlocked,
               progress: lesson['progress'] ?? 0.0,
@@ -82,9 +134,14 @@ class DashboardScreen extends StatelessWidget {
           
           children.add(const SizedBox(height: 50));
 
-          return ListView(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            children: children,
+          return RefreshIndicator(
+            onRefresh: _handleRefresh,
+            color: const Color(0xFF0277BD),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              children: children,
+            ),
           );
         },
       ),
@@ -179,7 +236,7 @@ class DashboardScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF4AC3F5),
+                color: const Color(0xFF0277BD),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
@@ -232,7 +289,25 @@ class DashboardScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-            onTap: isUnlocked ? () {
+            onTap: () {
+               if (!isUnlocked) {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                   SnackBar(
+                     content: const Row(
+                       children: [
+                         Icon(Icons.lock, color: Colors.white, size: 20),
+                         SizedBox(width: 10),
+                         Expanded(child: Text('Completa las lecciones anteriores para desbloquear.', style: TextStyle(fontWeight: FontWeight.bold))),
+                       ],
+                     ),
+                     backgroundColor: Colors.grey.shade800,
+                     behavior: SnackBarBehavior.floating,
+                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                     duration: const Duration(seconds: 3),
+                   ),
+                 );
+                 return;
+               }
                final userState = context.read<UserState>();
                if (userState.hearts <= 0) {
                  _showNoHeartsDialog(context);
@@ -242,7 +317,7 @@ class DashboardScreen extends StatelessWidget {
                  context, 
                  MaterialPageRoute(builder: (_) => PracticeScreen(lessonId: lessonId))
                );
-            } : null,
+            },
             child: SizedBox(
               width: 90,
               height: 90,
@@ -257,7 +332,7 @@ class DashboardScreen extends StatelessWidget {
                       value: 1.0,
                       strokeWidth: 8,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        isUnlocked ? const Color(0xFFBCE6FA) : Colors.grey.shade300
+                        isUnlocked ? const Color(0xFFBCE6FA) : Colors.grey.shade400
                       ),
                     ),
                   ),
@@ -271,7 +346,7 @@ class DashboardScreen extends StatelessWidget {
                         strokeWidth: 8,
                         strokeCap: StrokeCap.round,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isGold ? Colors.orange : const Color(0xFF4AC3F5)
+                          isGold ? Colors.orange : const Color(0xFF0277BD)
                         ),
                       ),
                     ),
@@ -281,8 +356,8 @@ class DashboardScreen extends StatelessWidget {
                     height: 65,
                     decoration: BoxDecoration(
                       color: isUnlocked 
-                        ? (isGold ? const Color(0xFFFFD700) : const Color(0xFF4AC3F5)) 
-                        : Colors.grey.shade400,
+                        ? (isGold ? const Color(0xFFFFD700) : const Color(0xFF0277BD)) 
+                        : Colors.grey.shade600,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -313,14 +388,14 @@ class DashboardScreen extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: isUnlocked ? Colors.black87 : Colors.grey,
+                    color: isUnlocked ? Colors.black87 : Colors.grey.shade700,
                   ),
                 ),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -345,14 +420,14 @@ class DashboardScreen extends StatelessWidget {
   Widget _buildTopStat(IconData icon, String text, Color color) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 22),
-        const SizedBox(width: 4),
+        Icon(icon, color: color, size: 26),
+        const SizedBox(width: 6),
         Text(
           text,
           style: TextStyle(
             color: color, 
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 18,
           ),
         ),
       ],
@@ -548,14 +623,14 @@ class _HeartTimerWidgetState extends State<HeartTimerWidget> {
       children: [
         Row(
           children: [
-            const Icon(Icons.favorite, color: Colors.red, size: 22),
-            const SizedBox(width: 4),
+            const Icon(Icons.favorite, color: Colors.red, size: 26),
+            const SizedBox(width: 6),
             Text(
               '${userState.hearts}/5',
               style: const TextStyle(
                 color: Colors.red, 
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 18,
               ),
             ),
           ],
@@ -566,11 +641,10 @@ class _HeartTimerWidgetState extends State<HeartTimerWidget> {
             style: const TextStyle(
               color: Color(0xFF00C853), // Green
               fontWeight: FontWeight.bold,
-              fontSize: 13,
+              fontSize: 14,
             ),
           ),
       ],
     );
   }
 }
-

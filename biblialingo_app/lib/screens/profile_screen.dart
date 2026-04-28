@@ -45,11 +45,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _checkAndSyncLevel();
+  }
+
+  Future<void> _checkAndSyncLevel() async {
+    try {
+      final api = context.read<ApiService>();
+      await api.checkLevelUp(); // Notifica al backend de cualquier nivel nuevo
+    } catch (e) {
+      debugPrint('Sincronización de nivel fallida: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userState = context.watch<UserState>();
     
     // Parse preference safely
     final bool excludeFestivities = userState.preferences['exclude_festivities'] == true;
+
+    // Cálculos del Sistema de Niveles
+    final int totalXp = userState.totalXp;
+    final int level = (totalXp / 100).floor() + 1; // 100 XP por nivel
+    final int currentLevelXp = totalXp % 100;
+    final double progress = currentLevelXp / 100.0;
+    final int xpNeeded = 100 - currentLevelXp;
 
     return Scaffold(
       appBar: AppBar(
@@ -58,8 +80,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
+            tooltip: 'Ajustes',
             onPressed: () {
-              // Settings logic placeholder
+              Navigator.pushNamed(context, '/settings');
             },
           ),
         ],
@@ -80,6 +103,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (userState.email.isNotEmpty)
               Text(userState.email, style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 20),
+            
+            // --- BARRA DE PROGRESO DE NIVEL ---
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.blue.shade200, width: 2),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Nivel $level', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF0277BD))),
+                      Text('$currentLevelXp / 100 XP', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade700, fontSize: 16)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 14,
+                    backgroundColor: Colors.blue.shade100,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0277BD)),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '¡Gana $xpNeeded XP más para subir al Nivel ${level + 1}!',
+                    style: TextStyle(fontSize: 14, color: Colors.blue.shade800, fontStyle: FontStyle.italic),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // --- FIN BARRA DE PROGRESO ---
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

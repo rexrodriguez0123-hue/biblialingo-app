@@ -7,6 +7,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/practice_screen.dart';
+import 'screens/settings_screen.dart';
 import 'services/api_service.dart';
 
 void main() {
@@ -101,6 +102,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/dashboard': (context) => const MainScreen(),
+        '/settings': (context) => const SettingsScreen(),
         // PracticeScreen is now pushed dynamically with arguments
       },
     );

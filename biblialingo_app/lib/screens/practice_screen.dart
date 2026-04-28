@@ -250,14 +250,14 @@ class _PracticeScreenState extends State<PracticeScreen> {
              
              const SizedBox(height: 10),
 
-             // Check Button (for type_in and scramble)
-             if (!_answered && (type == 'type_in' || type == 'scramble'))
+             // Check Button (for type_in, cloze, and scramble)
+             if (!_answered && (type == 'type_in' || type == 'cloze' || type == 'scramble'))
                ElevatedButton(
                  style: ElevatedButton.styleFrom(
                    backgroundColor: Colors.green,
                    padding: const EdgeInsets.symmetric(vertical: 15)
                  ),
-                 onPressed: () => _checkAnswer(type == 'type_in' ? _textController.text : _selectedOption),
+                 onPressed: () => _checkAnswer((type == 'type_in' || type == 'cloze') ? _textController.text : _selectedOption),
                  child: const Text('Comprobar', style: TextStyle(fontSize: 18, color: Colors.white)),
                ),
                
@@ -320,13 +320,13 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   Widget _buildExerciseContent(String type, Map<String, dynamic> questionData, Map<String, dynamic> exercise) {
     switch (type) {
-      case 'cloze':
       case 'selection':
         return _buildSelectionExercise(questionData, exercise);
-      case 'scramble':
-        return _buildScrambleExercise(questionData, exercise);
+      case 'cloze':
       case 'type_in':
         return _buildTypeInExercise(questionData, exercise);
+      case 'scramble':
+        return _buildScrambleExercise(questionData, exercise);
       case 'true_false':
         return _buildTrueFalseExercise(questionData, exercise);
       default:
@@ -441,15 +441,18 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   Widget _buildTypeInExercise(Map<String, dynamic> questionData, Map<String, dynamic> exercise) {
-    final context = questionData['context'] ?? '';
+    final text = questionData['text'] ?? questionData['context'] ?? '';
     final wordLength = questionData['word_length'] ?? 0;
+    final hint = questionData['hint'];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(context, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        Text(text, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
         const SizedBox(height: 10),
-        if (wordLength > 0)
+        if (hint != null)
+          Text('Pista: $hint', style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic), textAlign: TextAlign.center),
+        if (wordLength > 0 && hint == null)
           Text('($wordLength letras)', style: TextStyle(color: Colors.grey[600]), textAlign: TextAlign.center),
         const SizedBox(height: 20),
         TextField(

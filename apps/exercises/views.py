@@ -89,7 +89,11 @@ def submit_answer(request):
         is_correct=True,
     ).values('exercise').distinct().count()
 
-    progress_pct = correct_attempts / total_exercises if total_exercises > 0 else 0.0
+    # The user wants to unlock after 20 correct distinct exercises
+    required_correct = min(20, total_exercises) if total_exercises > 0 else 1
+    progress_pct = correct_attempts / required_correct
+    if progress_pct > 1.0:
+        progress_pct = 1.0
 
     lesson_progress, _ = UserLessonProgress.objects.get_or_create(
         user=user,

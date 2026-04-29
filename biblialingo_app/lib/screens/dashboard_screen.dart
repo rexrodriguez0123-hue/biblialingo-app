@@ -94,15 +94,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           final data = snapshot.data ?? {};
           final lessons = data['lessons'] as List<dynamic>? ?? [];
+          
+          // Invertir orden para que sea ascendente (de abajo a arriba)
+          final reversedLessons = List.from(lessons.reversed);
 
-          // Construir lista de nubes en zigzag
+          // Construir lista de nubes en zigzag ascendente
           List<Widget> children = [
+            const SizedBox(height: 100), // Espacio inicial para el scroll
             _buildUnitRibbon('UNIDAD 1: Los Orígenes'),
             const SizedBox(height: 30),
           ];
 
-          for (int i = 0; i < lessons.length; i++) {
-            final lesson = lessons[i];
+          for (int i = 0; i < reversedLessons.length; i++) {
+            final lesson = reversedLessons[i];
             bool isUnlocked = lesson['is_unlocked'] ?? false;
             double progress = lesson['progress'] ?? 0.0;
             
@@ -122,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: _getIconForLesson(lesson['title']),
                   progress: progress,
                   isUnlocked: isUnlocked,
-                  lessonIndex: i,
+                  lessonIndex: (reversedLessons.length - 1 - i),
                   onTap: () {
                     if (!isUnlocked) {
                       ScaffoldMessenger.of(context).showSnackBar(

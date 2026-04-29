@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../painters/cloud_progress_painter.dart';
 
 class LessonCloudWidget extends StatelessWidget {
@@ -24,53 +23,46 @@ class LessonCloudWidget extends StatelessWidget {
     this.lessonIndex = 0,
   });
 
-  String _getCloudStyle() {
-    final styleIndex = (lessonIndex % 3) + 1;
-    return 'assets/images/clouds/cloud_style_$styleIndex.svg';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final double cloudSize = isUnlocked ? 115.0 : 85.0;
-    final double ringSize = cloudSize + 16;
+    // Nubes desbloqueadas más grandes, bloqueadas más pequeñas
+    final double cloudSize = isUnlocked ? 118.0 : 88.0;
     final IconData displayIcon = isUnlocked ? icon : Icons.lock;
 
-    final cloudStack = Stack(
-      alignment: Alignment.center,
-      children: [
-        CustomPaint(
-          size: Size(ringSize, ringSize),
-          painter: CloudProgressPainter(
-            progress: isUnlocked ? progress : 1.0,
-            isUnlocked: isUnlocked,
-            strokeWidth: 7.0,
-            progressColor: const Color(0xFFFF9800),
-            backgroundColor: const Color(0xFF0277BD),
-          ),
-        ),
-        SizedBox(
-          width: cloudSize,
-          height: cloudSize,
-          child: Opacity(
-            opacity: isUnlocked ? 1.0 : 0.75,
-            child: SvgPicture.asset(
-              _getCloudStyle(),
-              fit: BoxFit.contain,
-              colorFilter: ColorFilter.mode(
-                isUnlocked
-                    ? const Color(0xFF0277BD)
-                    : const Color(0xFFB0C4D8),
-                BlendMode.srcIn,
+    // Colores: desbloqueada = azul sólido con ícono blanco
+    //          bloqueada   = blanca con contorno gris y ícono gris
+    final Color fillColor =
+        isUnlocked ? const Color(0xFF0277BD) : Colors.white;
+    final Color strokeColor =
+        isUnlocked ? const Color(0xFF01579B) : const Color(0xFFB0BEC5);
+    final Color iconColor =
+        isUnlocked ? Colors.white : const Color(0xFF90A4AE);
+
+    final cloudWidget = SizedBox(
+      width: cloudSize,
+      height: cloudSize,
+      child: Stack(
+        // Alinear el ícono ligeramente hacia abajo, en el cuerpo de la nube
+        alignment: const Alignment(0, 0.25),
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: CloudProgressPainter(
+                progress: isUnlocked ? progress : 0.0,
+                isUnlocked: isUnlocked,
+                fillColor: fillColor,
+                strokeColor: strokeColor,
+                strokeWidth: isUnlocked ? 5.5 : 4.0,
               ),
             ),
           ),
-        ),
-        Icon(
-          displayIcon,
-          size: cloudSize * 0.42,
-          color: Colors.white,
-        ),
-      ],
+          Icon(
+            displayIcon,
+            size: cloudSize * 0.35,
+            color: iconColor,
+          ),
+        ],
+      ),
     );
 
     final textColumn = Column(
@@ -107,8 +99,8 @@ class LessonCloudWidget extends StatelessWidget {
             ? Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  cloudStack,
-                  const SizedBox(width: 12),
+                  cloudWidget,
+                  const SizedBox(width: 16),
                   Expanded(child: textColumn),
                 ],
               )
@@ -116,8 +108,8 @@ class LessonCloudWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(child: textColumn),
-                  const SizedBox(width: 12),
-                  cloudStack,
+                  const SizedBox(width: 16),
+                  cloudWidget,
                 ],
               ),
       ),

@@ -4,7 +4,6 @@ import '../services/api_service.dart';
 import 'practice_screen.dart';
 import '../main.dart';
 import '../widgets/lesson_cloud_widget.dart';
-import '../widgets/vertical_dotted_line.dart';
 import 'dart:async';
 
 class DashboardScreen extends StatefulWidget {
@@ -95,88 +94,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           final data = snapshot.data ?? {};
           final lessons = data['lessons'] as List<dynamic>? ?? [];
-          
-          // Invertir el orden de las lecciones (de abajo a arriba = de primera a última)
-          final reversedLessons = List.from(lessons.reversed);
 
-          // Construir lista de nubes con líneas punteadas verticales
+          // Construir lista de nubes en zigzag
           List<Widget> children = [
             _buildUnitRibbon('UNIDAD 1: Los Orígenes'),
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
           ];
 
-          for (int i = 0; i < reversedLessons.length; i++) {
-            final lesson = reversedLessons[i];
+          for (int i = 0; i < lessons.length; i++) {
+            final lesson = lessons[i];
             bool isUnlocked = lesson['is_unlocked'] ?? false;
             double progress = lesson['progress'] ?? 0.0;
+            
+            // Zigzag: índices pares van a 0.2, impares van a 0.6
+            double alignment = (i % 2 == 0) ? 0.2 : 0.6;
 
             children.add(
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(
-                  child: LessonCloudWidget(
-                    title: lesson['title'],
-                    subtitle: 'Lección ${lesson['order']}',
-                    icon: _getIconForLesson(lesson['title']),
-                    progress: progress,
-                    isUnlocked: isUnlocked,
-                    onTap: () {
-                      if (!isUnlocked) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Row(
-                              children: [
-                                Icon(Icons.lock, color: Colors.white, size: 20),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Completa las lecciones anteriores para desbloquear.',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
+                padding: EdgeInsets.only(
+                  left: alignment * 80.0,
+                  top: 30.0,
+                  bottom: 30.0,
+                ),
+                child: LessonCloudWidget(
+                  title: lesson['title'],
+                  subtitle: 'Lección ${lesson['order']}',
+                  icon: _getIconForLesson(lesson['title']),
+                  progress: progress,
+                  isUnlocked: isUnlocked,
+                  lessonIndex: i,
+                  onTap: () {
+                    if (!isUnlocked) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Row(
+                            children: [
+                              Icon(Icons.lock, color: Colors.white, size: 20),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Completa las lecciones anteriores para desbloquear.',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                              ],
-                            ),
-                            backgroundColor: Colors.grey.shade800,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            duration: const Duration(seconds: 3),
+                              ),
+                            ],
                           ),
-                        );
-                        return;
-                      }
-                      final userState = context.read<UserState>();
-                      if (userState.hearts <= 0) {
-                        _showNoHeartsDialog(context);
-                        return;
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PracticeScreen(lessonId: lesson['id']),
+                          backgroundColor: Colors.grey.shade800,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          duration: const Duration(seconds: 3),
                         ),
                       );
-                    },
-                  ),
+                      return;
+                    }
+                    final userState = context.read<UserState>();
+                    if (userState.hearts <= 0) {
+                      _showNoHeartsDialog(context);
+                      return;
+                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PracticeScreen(lessonId: lesson['id']),
+                      ),
+                    );
+                  },
                 ),
               ),
             );
-
-            // Agregar línea punteada entre lecciones (excepto después de la última)
-            if (i < reversedLessons.length - 1) {
-              children.add(
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: VerticalDottedLine(
-                    height: 60,
-                    color: Color(0xFFBCCEEA),
-                    dotSize: 5.0,
-                    spacing: 10.0,
-                  ),
-                ),
-              );
-            }
           }
 
           children.add(const SizedBox(height: 50));

@@ -95,6 +95,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           final data = snapshot.data ?? {};
           final lessons = data['lessons'] as List<dynamic>? ?? [];
+          
+          // Invertir orden para que la lección 1 aparezca al bottom con reverse: true
+          final reversedLessons = List.from(lessons.reversed);
 
           // Construir lista de nubes en zigzag con orden correcto
           List<Widget> children = [
@@ -105,9 +108,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               content: Column(
                 children: [
                   const SizedBox(height: 30),
-                  // Lecciones aquí
-                  for (int i = 0; i < lessons.length; i++)
-                    _buildLessonWidget(lessons[i], i, lessons.length),
+                  // Lecciones en orden reverso (para que con reverse: true, aparezcan correctamente)
+                  for (int i = 0; i < reversedLessons.length; i++)
+                    _buildLessonWidget(reversedLessons[i], i, reversedLessons.length),
                   const SizedBox(height: 50),
                 ],
               ),

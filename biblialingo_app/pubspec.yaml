@@ -17,6 +17,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   google_sign_in: ^7.2.0
   just_audio: ^0.9.34
+  sticky_headers: ^0.3.0
 
 dev_dependencies:
   flutter_test:

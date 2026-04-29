@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 import '../services/api_service.dart';
 import 'practice_screen.dart';
 import '../main.dart';
@@ -94,83 +95,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           final data = snapshot.data ?? {};
           final lessons = data['lessons'] as List<dynamic>? ?? [];
-          
-          // Invertir orden para que sea ascendente (de abajo a arriba)
-          final reversedLessons = List.from(lessons.reversed);
 
-          // Construir lista de nubes en zigzag ascendente
+          // Construir lista de nubes en zigzag con orden correcto
           List<Widget> children = [
             const SizedBox(height: 100), // Espacio inicial para el scroll
-            _buildUnitRibbon('UNIDAD 1: Los Orígenes'),
-            const SizedBox(height: 30),
-          ];
-
-          for (int i = 0; i < reversedLessons.length; i++) {
-            final lesson = reversedLessons[i];
-            bool isUnlocked = lesson['is_unlocked'] ?? false;
-            double progress = lesson['progress'] ?? 0.0;
-            
-            // Zigzag: índices pares van a 0.2, impares van a 0.6
-            double alignment = (i % 2 == 0) ? 0.2 : 0.6;
-
-            children.add(
-              Padding(
-                padding: EdgeInsets.only(
-                  left: alignment * 80.0,
-                  top: 30.0,
-                  bottom: 30.0,
-                ),
-                child: LessonCloudWidget(
-                  title: lesson['title'],
-                  subtitle: 'Lección ${lesson['order']}',
-                  icon: _getIconForLesson(lesson['title']),
-                  progress: progress,
-                  isUnlocked: isUnlocked,
-                  lessonIndex: (reversedLessons.length - 1 - i),
-                  onTap: () {
-                    if (!isUnlocked) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Row(
-                            children: [
-                              Icon(Icons.lock, color: Colors.white, size: 20),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'Completa las lecciones anteriores para desbloquear.',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                          ),
-                          backgroundColor: Colors.grey.shade800,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                      return;
-                    }
-                    final userState = context.read<UserState>();
-                    if (userState.hearts <= 0) {
-                      _showNoHeartsDialog(context);
-                      return;
-                    }
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PracticeScreen(lessonId: lesson['id']),
-                      ),
-                    );
-                  },
-                ),
+            // UNIDAD como StickyHeader
+            StickyHeader(
+              header: _buildUnitRibbon('UNIDAD 1: Los Orígenes'),
+              content: Column(
+                children: [
+                  const SizedBox(height: 30),
+                  // Lecciones aquí
+                  for (int i = 0; i < lessons.length; i++)
+                    _buildLessonWidget(lessons[i], i, lessons.length),
+                  const SizedBox(height: 50),
+                ],
               ),
-            );
-          }
-
-          children.add(const SizedBox(height: 50));
+            ),
+          ];
 
           return RefreshIndicator(
             onRefresh: _handleRefresh,
@@ -180,6 +122,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: children,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLessonWidget(Map<String, dynamic> lesson, int index, int totalLessons) {
+    bool isUnlocked = lesson['is_unlocked'] ?? false;
+    double progress = lesson['progress'] ?? 0.0;
+    
+    // Zigzag: índices pares van a 0.2, impares van a 0.6
+    double alignment = (index % 2 == 0) ? 0.2 : 0.6;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: alignment * 80.0,
+        top: 30.0,
+        bottom: 30.0,
+      ),
+      child: LessonCloudWidget(
+        title: lesson['title'],
+        subtitle: 'Lección ${lesson['order']}',
+        icon: _getIconForLesson(lesson['title']),
+        progress: progress,
+        isUnlocked: isUnlocked,
+        lessonIndex: index,
+        onTap: () {
+          if (!isUnlocked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Row(
+                  children: [
+                    Icon(Icons.lock, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Completa las lecciones anteriores para desbloquear.',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.grey.shade800,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+          final userState = context.read<UserState>();
+          if (userState.hearts <= 0) {
+            _showNoHeartsDialog(context);
+            return;
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PracticeScreen(lessonId: lesson['id']),
             ),
           );
         },

@@ -111,7 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Lecciones en orden reverso (para que con reverse: true, aparezcan correctamente)
                   for (int i = 0; i < reversedLessons.length; i++)
                     _buildLessonWidget(reversedLessons[i], i, reversedLessons.length),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),

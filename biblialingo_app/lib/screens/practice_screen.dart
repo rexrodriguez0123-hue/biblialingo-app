@@ -430,11 +430,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
     double progress = (_currentIndex + 1) / _exercises.length;
 
     return PopScope(
-      canPop: true, // Permitir back button siempre
+      canPop: false, // Bloquear siempre, nosotros manejamos el back
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          _handleBackButtonPress();
-        }
+        // didPop siempre es false porque canPop: false
+        _handleBackButtonPress();
       },
       child: Scaffold(
         appBar: AppBar(

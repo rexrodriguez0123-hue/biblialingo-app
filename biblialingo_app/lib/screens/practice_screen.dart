@@ -343,8 +343,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
         break;
         
       case OpenPopupType.none:
-        // Back button normal (no hay popup)
-        Navigator.pop(context);
+        // Back button sin popup: ir a dashboard (no pop)
+        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
         break;
     }
   }
@@ -430,10 +430,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
     double progress = (_currentIndex + 1) / _exercises.length;
 
     return PopScope(
-      canPop: false, // Bloquear siempre, nosotros manejamos el back
+      canPop: _currentPopupType == OpenPopupType.none,
       onPopInvokedWithResult: (didPop, result) {
-        // didPop siempre es false porque canPop: false
-        _handleBackButtonPress();
+        if (!didPop) {
+          // Back button fue bloqueado porque hay popup abierto
+          _handleBackButtonPress();
+        } else {
+          // canPop: true permitió el pop normal
+          _handleBackButtonPress();
+        }
       },
       child: Scaffold(
         appBar: AppBar(

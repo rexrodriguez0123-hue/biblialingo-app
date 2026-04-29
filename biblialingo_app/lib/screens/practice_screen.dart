@@ -8,6 +8,15 @@ import '../widgets/error_popup.dart';
 import '../widgets/game_over_popup.dart';
 import '../widgets/no_hearts_popup.dart';
 
+// Enum para rastrear qué popup está abierto
+enum OpenPopupType {
+  none,
+  success,
+  error,
+  noHearts,
+  gameOver,
+}
+
 class PracticeScreen extends StatefulWidget {
   final int lessonId;
   const PracticeScreen({super.key, required this.lessonId});
@@ -36,7 +45,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   // Tracking for stats
   int _correctCount = 0;
   int _totalAttempted = 0;
-  bool _isDialogOpen = false; // Track if popup is open to prevent back button dismissal
+  OpenPopupType _currentPopupType = OpenPopupType.none; // Rastrear qué popup está abierto
 
   @override
   void initState() {
@@ -164,7 +173,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
       // Play correct sound
       _audioService.playCorrectSound();
       
-      setState(() => _isDialogOpen = true);
+      setState(() => _currentPopupType = OpenPopupType.success);
       
       showGeneralDialog(
         context: context,
@@ -174,7 +183,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         pageBuilder: (dialogContext, anim1, anim2) {
           return SuccessPopup(
             onNext: () {
-              setState(() => _isDialogOpen = false);
+              setState(() => _currentPopupType = OpenPopupType.none);
               Navigator.pop(dialogContext); // Close dialog
               _nextQuestion();        // Go to next
             },
@@ -199,7 +208,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
       
       // Si se acabaron los corazones, mostrar popup especial
       if (remainingHearts == 0) {
-        setState(() => _isDialogOpen = true);
+        setState(() => _currentPopupType = OpenPopupType.noHearts);
         
         // Capturar contexto del scaffold ANTES de mostrar el dialog
         final screenContext = context;
@@ -213,12 +222,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
             return NoHeartsPopup(
               timeUntilRegeneration: _calculateTimeUntilRegen(),
               onRecharge: () {
-                setState(() => _isDialogOpen = false);
+                setState(() => _currentPopupType = OpenPopupType.none);
                 Navigator.pop(dialogContext);
                 Navigator.pushNamed(screenContext, '/shop');
               },
               onGoHome: () {
-                setState(() => _isDialogOpen = false);
+                setState(() => _currentPopupType = OpenPopupType.none);
                 Navigator.pop(dialogContext);
                 Navigator.pushNamedAndRemoveUntil(screenContext, '/dashboard', (route) => false);
               },
@@ -239,7 +248,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         );
       } else {
         // Mostrar popup de error normal si aún hay corazones
-        setState(() => _isDialogOpen = true);
+        setState(() => _currentPopupType = OpenPopupType.error);
         
         // Capturar contexto del scaffold ANTES de mostrar el dialog
         final screenContext = context;
@@ -264,7 +273,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
               correctAnswer: correctText,
               remainingHearts: remainingHearts,
               onNext: () {
-                setState(() => _isDialogOpen = false);
+                setState(() => _currentPopupType = OpenPopupType.none);
                 Navigator.pop(dialogContext);
                 _nextQuestion();
               },
@@ -316,6 +325,30 @@ class _PracticeScreenState extends State<PracticeScreen> {
     }
   }
 
+  // Manejador central para back button en popups
+  void _handleBackButtonPress() {
+    switch (_currentPopupType) {
+      case OpenPopupType.success:
+      case OpenPopupType.error:
+        // Para popups de ejercicio: ir al siguiente
+        setState(() => _currentPopupType = OpenPopupType.none);
+        _nextQuestion();
+        break;
+        
+      case OpenPopupType.noHearts:
+      case OpenPopupType.gameOver:
+        // Para popups finales: ir al dashboard
+        setState(() => _currentPopupType = OpenPopupType.none);
+        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+        break;
+        
+      case OpenPopupType.none:
+        // Back button normal (no hay popup)
+        Navigator.pop(context);
+        break;
+    }
+  }
+
   Future<void> _submitToBackend(Map<String, dynamic> exercise, bool isCorrect) async {
     try {
       final api = context.read<ApiService>();
@@ -357,6 +390,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   void _finishLesson() {
+    setState(() => _currentPopupType = OpenPopupType.gameOver);
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -365,6 +400,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         totalAttempted: _totalAttempted,
         gemsEarned: _correctCount * 2, // Gana 2 gemas por respuesta correcta
         onNext: () {
+          setState(() => _currentPopupType = OpenPopupType.none);
           Navigator.pop(ctx); // Cerrar popup
           // Navegar a /dashboard asegurando que existe la ruta
           Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
@@ -394,11 +430,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
     double progress = (_currentIndex + 1) / _exercises.length;
 
     return PopScope(
-      canPop: !_isDialogOpen, // Prevent back button if dialog is open
+      canPop: true, // Permitir back button siempre
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          // Only pop if allowed by canPop
-          Navigator.pop(context);
+          _handleBackButtonPress();
         }
       },
       child: Scaffold(

@@ -66,9 +66,12 @@ class _DottedLinePainter extends CustomPainter {
   }
 }
 
-/// Línea punteada diagonal entre dos nubes en zigzag.
-/// [fromLeft] = true: empieza en el lado izquierdo (nube izquierda arriba → derecha abajo)
-/// [fromLeft] = false: empieza en el lado derecho (nube derecha arriba → izquierda abajo)
+/// Línea de conexión suave entre dos nubes en zigzag.
+/// Usa una curva de Bézier cúbica (efecto sigmoide) y coloca puntos
+/// exactamente sobre la curva via PathMetrics.getTangentForOffset.
+///
+/// [fromLeft] = true:  nube de arriba a la IZQUIERDA → curva izq→der
+/// [fromLeft] = false: nube de arriba a la DERECHA  → curva der→izq
 class DiagonalDottedLine extends StatelessWidget {
   final bool fromLeft;
   final double height;
@@ -77,8 +80,8 @@ class DiagonalDottedLine extends StatelessWidget {
   const DiagonalDottedLine({
     super.key,
     required this.fromLeft,
-    this.height = 55.0,
-    this.color = const Color(0xFFBCCEEA),
+    this.height = 65.0,
+    this.color = const Color(0xFFB0C4D8),
   });
 
   @override
@@ -87,46 +90,61 @@ class DiagonalDottedLine extends StatelessWidget {
       height: height,
       width: double.infinity,
       child: CustomPaint(
-        painter: _DiagonalDottedPainter(fromLeft: fromLeft, color: color),
+        painter: _BezierDottedPainter(fromLeft: fromLeft, color: color),
       ),
     );
   }
 }
 
-class _DiagonalDottedPainter extends CustomPainter {
+class _BezierDottedPainter extends CustomPainter {
   final bool fromLeft;
   final Color color;
 
-  _DiagonalDottedPainter({required this.fromLeft, required this.color});
+  _BezierDottedPainter({required this.fromLeft, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round;
+    // Centro X de cada nube:
+    // Izquierda: padding(12) + cloudW(140)/2 ≈ 21% del ancho de pantalla
+    // Derecha:   ancho - mismo valor ≈ 79%
+    final double leftX = size.width * 0.21;
+    final double rightX = size.width * 0.79;
 
-    // Posiciones aproximadas del centro de la nube como fracción del ancho
-    const leftCenterFrac = 0.22;
-    const rightCenterFrac = 0.78;
+    final startX = fromLeft ? leftX : rightX;
+    final endX = fromLeft ? rightX : leftX;
 
-    final startX = fromLeft
-        ? size.width * leftCenterFrac
-        : size.width * rightCenterFrac;
-    final endX = fromLeft
-        ? size.width * rightCenterFrac
-        : size.width * leftCenterFrac;
+    // Bezier cúbico con puntos de control que crean una "S" suave:
+    // cp1 mantiene la tangente vertical al inicio,
+    // cp2 la mantiene vertical al final.
+    final path = Path();
+    path.moveTo(startX, 0);
+    path.cubicTo(
+      startX, size.height * 0.5,
+      endX,   size.height * 0.5,
+      endX,   size.height,
+    );
 
-    const numDots = 9;
-    for (int i = 0; i <= numDots; i++) {
-      final t = i / numDots;
-      final x = startX + (endX - startX) * t;
-      final y = size.height * t;
-      canvas.drawCircle(Offset(x, y), 3.5, paint);
+    // Dibujar puntos a lo largo de la curva usando PathMetrics
+    final metrics = path.computeMetrics().toList();
+    if (metrics.isEmpty) return;
+
+    final paint = Paint()..color = color;
+
+    for (final metric in metrics) {
+      double distance = 0;
+      const dotSpacing = 11.0;
+
+      while (distance < metric.length) {
+        final tangent = metric.getTangentForOffset(distance);
+        if (tangent != null) {
+          canvas.drawCircle(tangent.position, 3.5, paint);
+        }
+        distance += dotSpacing;
+      }
     }
   }
 
   @override
-  bool shouldRepaint(_DiagonalDottedPainter old) =>
+  bool shouldRepaint(_BezierDottedPainter old) =>
       old.fromLeft != fromLeft || old.color != color;
 }

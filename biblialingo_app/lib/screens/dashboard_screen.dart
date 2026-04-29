@@ -52,17 +52,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const HeartTimerWidget(),
           ],
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(6),
-          child: SizedBox(
-            height: 6,
-            child: LinearProgressIndicator(
-              value: (userState.hearts / 5.0).clamp(0.0, 1.0),
-              backgroundColor: Colors.grey.shade100,
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
-            ),
-          ),
-        ),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _curriculumFuture,

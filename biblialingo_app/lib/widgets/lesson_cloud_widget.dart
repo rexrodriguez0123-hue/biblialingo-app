@@ -9,7 +9,6 @@ class LessonCloudWidget extends StatelessWidget {
   final bool isUnlocked;
   final bool isCloudOnLeft;
   final VoidCallback? onTap;
-  final int lessonIndex;
 
   const LessonCloudWidget({
     super.key,
@@ -20,45 +19,54 @@ class LessonCloudWidget extends StatelessWidget {
     required this.isUnlocked,
     required this.isCloudOnLeft,
     this.onTap,
-    this.lessonIndex = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Nubes desbloqueadas más grandes, bloqueadas más pequeñas
-    final double cloudSize = isUnlocked ? 118.0 : 88.0;
+    // Canvas rectangular para que el path de nube se vea correcto
+    final double cloudW = isUnlocked ? 140.0 : 100.0;
+    final double cloudH = isUnlocked ? 88.0 : 63.0;
+
     final IconData displayIcon = isUnlocked ? icon : Icons.lock;
 
-    // Colores: desbloqueada = azul sólido con ícono blanco
-    //          bloqueada   = blanca con contorno gris y ícono gris
+    // Colores: desbloqueada = azul oscuro + ícono blanco
+    //          bloqueada   = gris claro + ícono gris
     final Color fillColor =
-        isUnlocked ? const Color(0xFF0277BD) : Colors.white;
-    final Color strokeColor =
-        isUnlocked ? const Color(0xFF01579B) : const Color(0xFFB0BEC5);
+        isUnlocked ? const Color(0xFF0277BD) : Colors.grey.shade200;
+    final Color strokeColor = const Color(0xFF01579B);
     final Color iconColor =
-        isUnlocked ? Colors.white : const Color(0xFF90A4AE);
+        isUnlocked ? Colors.white : Colors.grey.shade500;
 
     final cloudWidget = SizedBox(
-      width: cloudSize,
-      height: cloudSize,
+      width: cloudW,
+      height: cloudH,
       child: Stack(
-        // Alinear el ícono ligeramente hacia abajo, en el cuerpo de la nube
-        alignment: const Alignment(0, 0.25),
+        alignment: Alignment.center,
         children: [
+          // 1. Relleno + sombra
           Positioned.fill(
             child: CustomPaint(
-              painter: CloudProgressPainter(
-                progress: isUnlocked ? progress : 0.0,
-                isUnlocked: isUnlocked,
+              painter: CloudFillPainter(
                 fillColor: fillColor,
-                strokeColor: strokeColor,
-                strokeWidth: isUnlocked ? 5.5 : 4.0,
+                isLocked: !isUnlocked,
               ),
             ),
           ),
+          // 2. Trazo de progreso (solo si desbloqueada y tiene progreso)
+          if (isUnlocked && progress > 0)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: CloudProgressPainter(
+                  progress: progress,
+                  strokeColor: strokeColor,
+                  strokeWidth: 5.5,
+                ),
+              ),
+            ),
+          // 3. Ícono centrado
           Icon(
             displayIcon,
-            size: cloudSize * 0.35,
+            size: cloudH * 0.40,
             color: iconColor,
           ),
         ],

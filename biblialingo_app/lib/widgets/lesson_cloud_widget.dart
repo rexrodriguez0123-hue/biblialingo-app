@@ -53,7 +53,7 @@ class LessonCloudWidget extends StatelessWidget {
                   backgroundColor: const Color(0xFF0277BD), // Azul
                 ),
               ),
-              // Nube SVG con fondo de color
+              // Nube SVG con efecto de dos trazos (exterior e interior)
               Container(
                 width: cloudSize,
                 height: cloudSize,
@@ -62,15 +62,29 @@ class LessonCloudWidget extends StatelessWidget {
                 ),
                 child: Opacity(
                   opacity: isUnlocked ? 1.0 : 0.7,
-                  child: SvgPicture.asset(
-                    _getCloudStyle(),
-                    fit: BoxFit.contain,
-                    colorFilter: ColorFilter.mode(
-                      isUnlocked
-                          ? const Color(0xFF0277BD)
-                          : const Color(0xFFCCCCCC),
-                      BlendMode.srcIn,
-                    ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Trazo exterior: SVG con ColorFilter (color de la app)
+                      SvgPicture.asset(
+                        _getCloudStyle(),
+                        fit: BoxFit.contain,
+                        colorFilter: ColorFilter.mode(
+                          isUnlocked
+                              ? const Color(0xFF0277BD)
+                              : const Color(0xFFCCCCCC),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      // Trazo interior: SVG sin ColorFilter (colores originales del SVG) escalado más pequeño
+                      Transform.scale(
+                        scale: 0.85,
+                        child: SvgPicture.asset(
+                          _getCloudStyle(),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

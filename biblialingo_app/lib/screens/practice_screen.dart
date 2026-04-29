@@ -181,12 +181,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
         barrierColor: Colors.black.withOpacity(0.6),
         transitionDuration: const Duration(milliseconds: 300),
         pageBuilder: (dialogContext, anim1, anim2) {
-          return SuccessPopup(
-            onNext: () {
-              setState(() => _currentPopupType = OpenPopupType.none);
-              Navigator.pop(dialogContext); // Close dialog
-              _nextQuestion();        // Go to next
-            },
+          return PopScope(
+            canPop: false,
+            child: SuccessPopup(
+              onNext: () {
+                setState(() => _currentPopupType = OpenPopupType.none);
+                Navigator.pop(dialogContext); // Close dialog
+                _nextQuestion();        // Go to next
+              },
+            ),
           );
         },
         transitionBuilder: (context, anim1, anim2, child) {
@@ -219,18 +222,21 @@ class _PracticeScreenState extends State<PracticeScreen> {
           barrierColor: Colors.black.withOpacity(0.6),
           transitionDuration: const Duration(milliseconds: 300),
           pageBuilder: (dialogContext, anim1, anim2) {
-            return NoHeartsPopup(
-              timeUntilRegeneration: _calculateTimeUntilRegen(),
-              onRecharge: () {
-                setState(() => _currentPopupType = OpenPopupType.none);
-                Navigator.pop(dialogContext);
-                Navigator.pushNamed(screenContext, '/shop');
-              },
-              onGoHome: () {
-                setState(() => _currentPopupType = OpenPopupType.none);
-                Navigator.pop(dialogContext);
-                Navigator.pushNamedAndRemoveUntil(screenContext, '/dashboard', (route) => false);
-              },
+            return PopScope(
+              canPop: false,
+              child: NoHeartsPopup(
+                timeUntilRegeneration: _calculateTimeUntilRegen(),
+                onRecharge: () {
+                  setState(() => _currentPopupType = OpenPopupType.none);
+                  Navigator.pop(dialogContext);
+                  Navigator.pushNamed(screenContext, '/shop');
+                },
+                onGoHome: () {
+                  setState(() => _currentPopupType = OpenPopupType.none);
+                  Navigator.pop(dialogContext);
+                  Navigator.pushNamedAndRemoveUntil(screenContext, '/dashboard', (route) => false);
+                },
+              ),
             );
           },
           transitionBuilder: (context, anim1, anim2, child) {
@@ -269,14 +275,17 @@ class _PracticeScreenState extends State<PracticeScreen> {
               correctText = answerData['correct']?.toString() ?? answerData['correct_order']?.join(' ') ?? 'Respuesta';
             }
 
-            return ErrorPopup(
-              correctAnswer: correctText,
-              remainingHearts: remainingHearts,
-              onNext: () {
-                setState(() => _currentPopupType = OpenPopupType.none);
-                Navigator.pop(dialogContext);
-                _nextQuestion();
-              },
+            return PopScope(
+              canPop: false,
+              child: ErrorPopup(
+                correctAnswer: correctText,
+                remainingHearts: remainingHearts,
+                onNext: () {
+                  setState(() => _currentPopupType = OpenPopupType.none);
+                  Navigator.pop(dialogContext);
+                  _nextQuestion();
+                },
+              ),
             );
           },
           transitionBuilder: (context, anim1, anim2, child) {
@@ -374,16 +383,19 @@ class _PracticeScreenState extends State<PracticeScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => GameOverPopup(
-        correctCount: _correctCount,
-        totalAttempted: _totalAttempted,
-        gemsEarned: _correctCount * 2, // Gana 2 gemas por respuesta correcta
-        onNext: () {
-          setState(() => _currentPopupType = OpenPopupType.none);
-          Navigator.pop(ctx); // Cerrar popup
-          // Navegar a /dashboard asegurando que existe la ruta
-          Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
-        },
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: GameOverPopup(
+          correctCount: _correctCount,
+          totalAttempted: _totalAttempted,
+          gemsEarned: _correctCount * 2, // Gana 2 gemas por respuesta correcta
+          onNext: () {
+            setState(() => _currentPopupType = OpenPopupType.none);
+            Navigator.pop(ctx); // Cerrar popup
+            // Navegar a /dashboard asegurando que existe la ruta
+            Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+          },
+        ),
       ),
     );
   }
@@ -409,9 +421,14 @@ class _PracticeScreenState extends State<PracticeScreen> {
     double progress = (_currentIndex + 1) / _exercises.length;
 
     return PopScope(
-      canPop: false, // Bloquear completamente el back button del celular
+      canPop: false, // Deshabilitar botón back del celular
+      onPopInvokedWithResult: (didPop, result) {
+        // Back button o gesto de retroceso detectado pero bloqueado
+        debugPrint('Back button bloqueado en PracticeScreen');
+      },
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false, // No mostrar botón back automático
           leading: IconButton(
             icon: const Icon(Icons.close),
             onPressed: () {

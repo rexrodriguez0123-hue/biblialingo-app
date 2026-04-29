@@ -325,29 +325,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
     }
   }
 
-  // Manejador central para back button en popups
-  void _handleBackButtonPress() {
-    switch (_currentPopupType) {
-      case OpenPopupType.success:
-      case OpenPopupType.error:
-        // Para popups de ejercicio: ir al siguiente
-        setState(() => _currentPopupType = OpenPopupType.none);
-        _nextQuestion();
-        break;
-        
-      case OpenPopupType.noHearts:
-      case OpenPopupType.gameOver:
-        // Para popups finales: ir al dashboard
-        setState(() => _currentPopupType = OpenPopupType.none);
-        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
-        break;
-        
-      case OpenPopupType.none:
-        // Back button sin popup: ir a dashboard (no pop)
-        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
-        break;
-    }
-  }
+  // Back button del celular está completamente deshabilitado
+  // El usuario solo puede avanzar con los botones del popup
 
   Future<void> _submitToBackend(Map<String, dynamic> exercise, bool isCorrect) async {
     try {
@@ -430,16 +409,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     double progress = (_currentIndex + 1) / _exercises.length;
 
     return PopScope(
-      canPop: _currentPopupType == OpenPopupType.none,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          // Back button fue bloqueado porque hay popup abierto
-          _handleBackButtonPress();
-        } else {
-          // canPop: true permitió el pop normal
-          _handleBackButtonPress();
-        }
-      },
+      canPop: false, // Bloquear completamente el back button del celular
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(

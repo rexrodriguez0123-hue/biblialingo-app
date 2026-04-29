@@ -171,11 +171,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
         barrierDismissible: false,
         barrierColor: Colors.black.withOpacity(0.6),
         transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (context, anim1, anim2) {
+        pageBuilder: (dialogContext, anim1, anim2) {
           return SuccessPopup(
             onNext: () {
               setState(() => _isDialogOpen = false);
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(dialogContext); // Close dialog
               _nextQuestion();        // Go to next
             },
           );
@@ -201,23 +201,26 @@ class _PracticeScreenState extends State<PracticeScreen> {
       if (remainingHearts == 0) {
         setState(() => _isDialogOpen = true);
         
+        // Capturar contexto del scaffold ANTES de mostrar el dialog
+        final screenContext = context;
+        
         showGeneralDialog(
           context: context,
           barrierDismissible: false,
           barrierColor: Colors.black.withOpacity(0.6),
           transitionDuration: const Duration(milliseconds: 300),
-          pageBuilder: (context, anim1, anim2) {
+          pageBuilder: (dialogContext, anim1, anim2) {
             return NoHeartsPopup(
               timeUntilRegeneration: _calculateTimeUntilRegen(),
               onRecharge: () {
                 setState(() => _isDialogOpen = false);
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/shop');
+                Navigator.pop(dialogContext);
+                Navigator.pushNamed(screenContext, '/shop');
               },
               onGoHome: () {
                 setState(() => _isDialogOpen = false);
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+                Navigator.pop(dialogContext);
+                Navigator.pushNamedAndRemoveUntil(screenContext, '/dashboard', (route) => false);
               },
             );
           },
@@ -238,12 +241,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
         // Mostrar popup de error normal si aún hay corazones
         setState(() => _isDialogOpen = true);
         
+        // Capturar contexto del scaffold ANTES de mostrar el dialog
+        final screenContext = context;
+        
         showGeneralDialog(
           context: context,
           barrierDismissible: false,
           barrierColor: Colors.black.withOpacity(0.6),
           transitionDuration: const Duration(milliseconds: 300),
-          pageBuilder: (context, anim1, anim2) {
+          pageBuilder: (dialogContext, anim1, anim2) {
             String correctText = 'Respuesta';
             if (type == 'true_false') {
               correctText = answerData['correct'] == true ? 'Verdadero' : 'Falso';
@@ -259,7 +265,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
               remainingHearts: remainingHearts,
               onNext: () {
                 setState(() => _isDialogOpen = false);
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 _nextQuestion();
               },
             );
@@ -360,8 +366,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
         gemsEarned: _correctCount * 2, // Gana 2 gemas por respuesta correcta
         onNext: () {
           Navigator.pop(ctx); // Cerrar popup
-          // Navegar a /main asegurando que existe la ruta
-          Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+          // Navegar a /dashboard asegurando que existe la ruta
+          Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
         },
       ),
     );
@@ -400,8 +406,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
           leading: IconButton(
             icon: const Icon(Icons.close),
             onPressed: () {
-              // Navegar a /main en lugar de solo pop (que causa pantalla negra)
-              Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+              // Navegar a /dashboard en lugar de solo pop (que causa pantalla negra)
+              Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
             },
           ),
           title: LinearProgressIndicator(value: progress, minHeight: 10, borderRadius: BorderRadius.circular(5)),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/api_service.dart';
 import 'practice_screen.dart';
 import '../main.dart';
@@ -53,9 +54,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _curriculumFuture,
-        builder: (context, snapshot) {
+      body: Stack(
+        children: [
+          // Wallpaper de fondo
+          Positioned.fill(
+            child: SvgPicture.asset(
+              'assets/images/clouds_wallpaper.svg',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Contenido principal
+          FutureBuilder<Map<String, dynamic>>(
+            future: _curriculumFuture,
+            builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -137,7 +148,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: children,
             ),
           );
-        },
+            },
+          ),
+        ],
       ),
     );
   }

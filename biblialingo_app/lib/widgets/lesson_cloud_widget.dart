@@ -29,13 +29,13 @@ class LessonCloudWidget extends StatelessWidget {
 
     final IconData displayIcon = isUnlocked ? icon : Icons.lock;
 
-    // Colores: desbloqueada = azul oscuro + ícono blanco
+    // Colores: desbloqueada = blanco + ícono azul
     //          bloqueada   = gris claro + ícono gris
     final Color fillColor =
-        isUnlocked ? const Color(0xFF0277BD) : Colors.grey.shade200;
+        isUnlocked ? Colors.white : Colors.grey.shade200;
     final Color strokeColor = const Color(0xFF01579B);
     final Color iconColor =
-        isUnlocked ? Colors.white : Colors.grey.shade500;
+        isUnlocked ? const Color(0xFF0277BD) : Colors.grey.shade500;
 
     final cloudWidget = SizedBox(
       width: cloudW,

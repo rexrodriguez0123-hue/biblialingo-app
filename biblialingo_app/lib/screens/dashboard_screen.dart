@@ -155,7 +155,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       progress: progress,
       isUnlocked: isUnlocked,
       isCloudOnLeft: isCloudOnLeft,
-      lessonIndex: index,
       onTap: () {
         if (!isUnlocked) {
           ScaffoldMessenger.of(context).showSnackBar(

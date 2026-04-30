@@ -1,4 +1,4 @@
-# Estado Actual - BibliaLingo App
+# Estado Actual - Camino Bíblico App
 
 ## MVP Progress: 93% ✅
 

@@ -129,10 +129,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom - 16,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+              const SizedBox(height: 20),
               Image.asset(
                 'assets/images/welcome_hero.jpg',
                 height: 250,
@@ -157,7 +162,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   color: Colors.grey,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -226,6 +231,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
               const SizedBox(height: 40),
             ],
+              ),
+            ),
           ),
         ),
       ),

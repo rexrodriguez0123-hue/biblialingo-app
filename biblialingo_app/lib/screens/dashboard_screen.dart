@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../services/api_service.dart';
 import 'practice_screen.dart';
 import '../main.dart';
 import '../widgets/lesson_cloud_widget.dart';
 import '../widgets/vertical_dotted_line.dart';
+import '../widgets/background_widget.dart';
 import 'dart:async';
+
+// Widget para manejar el fondo con SVG y fallback a degradado
+class BackgroundWallpaper extends StatelessWidget {
+  const BackgroundWallpaper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const RobustBackgroundWallpaper();
+  }
+}
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -57,12 +67,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: Stack(
         children: [
           // Wallpaper de fondo
-          Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/images/clouds_wallpaper.svg',
-              fit: BoxFit.cover,
-            ),
-          ),
+          const BackgroundWallpaper(),
           // Contenido principal
           FutureBuilder<Map<String, dynamic>>(
             future: _curriculumFuture,

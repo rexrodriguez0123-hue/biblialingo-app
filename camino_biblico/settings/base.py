@@ -104,7 +104,7 @@ REST_FRAMEWORK = {
 # Google OAuth Client ID
 GOOGLE_CLIENT_ID = os.environ.get(
     'GOOGLE_CLIENT_ID',
-    '697027944347-sbcolvj44n7ie3395lrp6lsm7fjakrer.apps.googleusercontent.com'
+    '1067304772395-p22rkcd1k7udphe9ne62bd2ernhi23ah.apps.googleusercontent.com'
 )
 
 

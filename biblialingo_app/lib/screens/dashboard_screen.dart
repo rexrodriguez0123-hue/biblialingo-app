@@ -143,14 +143,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ];
 
-          return RefreshIndicator(
-            onRefresh: _handleRefresh,
-            color: const Color(0xFF0277BD),
-            child: ListView(
-              reverse: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(top: 20, bottom: 0),
-              children: children,
+          final bottomPadding = MediaQuery.of(context).padding.bottom + 80;
+
+          return SafeArea(
+            bottom: true,
+            child: RefreshIndicator(
+              onRefresh: _handleRefresh,
+              color: const Color(0xFF0277BD),
+              child: ListView(
+                reverse: true,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.only(top: 20, bottom: bottomPadding),
+                children: children,
+              ),
             ),
           );
             },

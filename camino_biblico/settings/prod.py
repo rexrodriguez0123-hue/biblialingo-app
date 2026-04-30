@@ -8,7 +8,11 @@ from .base import *  # noqa: F401,F403
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'Camino Biblico-app.onrender.com').split(',')
+# 1. Corregido: Sin espacios y con tu nuevo dominio .com
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS', 
+    'camino-biblico.com,camino-biblico-app.onrender.com'
+).split(',')
 
 # Database - PostgreSQL via DATABASE_URL
 DATABASES = {
@@ -19,10 +23,16 @@ DATABASES = {
     )
 }
 
-# CORS - Only allow the Flutter app origins
+# 2. Corregido: Sin espacios. Esto evita errores de CORS en el Flutter app
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
-    'https://Camino Biblico-app.onrender.com'
+    'https://camino-biblico.com,https://camino-biblico-app.onrender.com'
+).split(',')
+
+# 3. NUEVO: Necesario para poder iniciar sesión en /admin sin errores 403
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://camino-biblico.com,https://camino-biblico-app.onrender.com'
 ).split(',')
 
 # Security settings
@@ -34,4 +44,3 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # WhiteNoise for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-

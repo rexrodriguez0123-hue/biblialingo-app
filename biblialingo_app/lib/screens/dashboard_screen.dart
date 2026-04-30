@@ -130,28 +130,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
 
           final List<Widget> children = [
-            const SizedBox(height: 0),
-            StickyHeader(
-              header: _buildUnitRibbon('UNIDAD 1: Los Orígenes'),
-              content: Column(
-                children: [
-                  const SizedBox(height: 24),
-                  ...lessonWidgets,
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
+            const SizedBox(height: 24),
+            ...lessonWidgets,
+            const SizedBox(height: 20),
           ];
 
-          return RefreshIndicator(
-            onRefresh: _handleRefresh,
-            color: const Color(0xFF0277BD),
-            child: ListView(
-              reverse: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(top: 20, bottom: 60),
-              children: children,
-            ),
+          return Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: _handleRefresh,
+                color: const Color(0xFF0277BD),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(top: 100, bottom: 10),
+                  children: children,
+                ),
+              ),
+              // Header fijo en la parte superior
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildUnitRibbon('UNIDAD 1: Los Orígenes'),
+              ),
+            ],
           );
             },
           ),

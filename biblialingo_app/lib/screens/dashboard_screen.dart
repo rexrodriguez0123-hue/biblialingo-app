@@ -142,7 +142,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: ListView(
                   reverse: true,
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 100, bottom: 60),
+                  padding: const EdgeInsets.only(top: 100, bottom: 10),
                   children: children,
                 ),
               ),

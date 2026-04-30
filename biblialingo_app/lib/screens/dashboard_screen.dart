@@ -130,7 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
 
           final List<Widget> children = [
-            const SizedBox(height: 20),
+            const SizedBox(height: 0),
             StickyHeader(
               header: _buildUnitRibbon('UNIDAD 1: Los Orígenes'),
               content: Column(
@@ -149,7 +149,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: ListView(
               reverse: true,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(top: 20, bottom: 80),
+              padding: const EdgeInsets.only(top: 20, bottom: 60),
               children: children,
             ),
           );

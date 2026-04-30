@@ -112,15 +112,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           final data = snapshot.data ?? {};
           final lessons = data['lessons'] as List<dynamic>? ?? [];
-          final reversedLessons = List.from(lessons.reversed);
 
           // Construir lecciones con líneas diagonales entre ellas
           final List<Widget> lessonWidgets = [];
-          for (int i = 0; i < reversedLessons.length; i++) {
+          for (int i = 0; i < lessons.length; i++) {
             lessonWidgets.add(
-              _buildLessonWidget(reversedLessons[i], i, reversedLessons.length),
+              _buildLessonWidget(lessons[i], i, lessons.length),
             );
-            if (i < reversedLessons.length - 1) {
+            if (i < lessons.length - 1) {
               // La línea diagonal va desde el centro de la nube i hacia la nube i+1.
               // fromLeft = true cuando la nube superior (índice i) está en la izquierda.
               lessonWidgets.add(

@@ -1,4 +1,4 @@
-# 📊 ESTADO ACTUAL - BibliaLingo MVP
+# 📊 ESTADO ACTUAL - Camino Biblico MVP
 
 **Última Actualización:** 29 de Abril de 2026  
 **Estado General:** 93% MVP Ready ✅  
@@ -26,12 +26,12 @@
 
 ### 📂 Raíz del Proyecto
 ```
-biblialingo/
+Camino Biblico/
 ├── .claude/                      ⚠️ Worktrees de Claude (análisis: VER SECCIÓN FINAL)
 ├── .git/                         ✅ Control de versiones (Git)
 ├── apps/                         ✅ Backend Django (5 apps)
-├── biblialingo/                  ✅ Configuración central Django
-├── biblialingo_app/              ✅ Frontend Flutter
+├── Camino Biblico/                  ✅ Configuración central Django
+├── Camino Biblico_app/              ✅ Frontend Flutter
 ├── scripts/                      📦 Utilidades (limpieza de textos)
 ├── ESTADO_ACTUAL.md              ✅ Estado anterior
 ├── PLAN_AUTO_SCROLL_BOTTOM.md    📋 Plan implementado
@@ -197,7 +197,7 @@ dj-database-url
 
 ---
 
-## 📲 FRONTEND - FLUTTER (biblialingo_app/)
+## 📲 FRONTEND - FLUTTER (Camino Biblico_app/)
 
 ### **Estructura de Carpetas**
 
@@ -235,7 +235,7 @@ lib/
 - Splash screen de bienvenida
 - Botones: Login / Registro
 - Animación de hero
-- Logo de BibliaLingo
+- Logo de Camino Biblico
 
 #### 2. **Login Screen** ✅
 - Email + Contraseña
@@ -447,23 +447,23 @@ Código ✅ + Base de datos ✅ + API ✅ + APK ✅ =
 
 **Paso 1: Verificar Git (2 min)**
 ```bash
-cd "c:\Users\bonil\Resilio Sync\familia\Proyecto Esteban Biblialingo\biblialingo"
+cd "c:\Users\bonil\Resilio Sync\familia\Proyecto Esteban Camino Biblico\Camino Biblico"
 git status
 # Esperado: "On branch main, nothing to commit"
 ```
 
 **Paso 2: Render detecta y autodeploya (5-10 min)**
-- Render está conectado a: `github.com/rexrodriguez0123-hue/biblialingo-app`
+- Render está conectado a: `github.com/rexrodriguez0123-hue/Camino Biblico-app`
 - Monitorea main branch
 - Al detectar nuevo commit, inicia rebuild automático
 
 **Paso 3: Validar deployment (5 min)**
 ```bash
 # Backend health check
-curl https://biblialingo-app.onrender.com/health/
+curl https://Camino Biblico-app.onrender.com/health/
 
 # Login endpoint
-curl -X POST https://biblialingo-app.onrender.com/api/v1/auth/login \
+curl -X POST https://Camino Biblico-app.onrender.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "test@test.com", "password": "test"}'
 ```
@@ -550,7 +550,7 @@ La carpeta `.claude/` contiene **worktrees de Git** — copias alternas del repo
 └── worktrees/
     └── condescending-kare-efaffc/    ← Copia del repo (solo lectura)
         ├── apps/
-        ├── biblialingo_app/
+        ├── Camino Biblico_app/
         ├── .git/
         └── ... (duplica todo)
 ```
@@ -687,7 +687,7 @@ Remove-Item -Recurse -Force ".claude"
 
 ```
          ╔════════════════════════════════════════════╗
-         ║  BibliaLingo MVP Status: 93% COMPLETADO   ║
+         ║  Camino Biblico MVP Status: 93% COMPLETADO   ║
          ║                                            ║
          ║  ✅ Backend: 100%                          ║
          ║  ✅ Frontend: 100%                         ║
@@ -706,3 +706,4 @@ Remove-Item -Recurse -Force ".claude"
 **Documento Generado:** 29 de Abril de 2026  
 **Análisis:** Estructura completa, dependencias, estado de tareas, recomendaciones  
 **Siguiente Acción:** ▶️ Ejecutar deployment a Render
+

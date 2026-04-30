@@ -1,4 +1,4 @@
-# AUDITORÍA UI/UX BIBLIALINGO — Estudio Bíblico Gamificado
+# AUDITORÍA UI/UX CAMINO BÍBLICO — Estudio Bíblico Gamificado
 
 **Fecha:** 28 de Abril de 2026  
 **Estado:** Análisis Profundo para MVP  
@@ -9,7 +9,7 @@
 
 ## RESUMEN EJECUTIVO
 
-BibliaLingo es una **aplicación educativa gamificada que transforma el estudio bíblico en una experiencia adictiva al estilo Duolingo**. El proyecto cuenta con un **backend robusto (Django + SRS) y una arquitectura de datos sofisticada**, pero enfrenta **déficits críticos en pulimento UX, documentación y completitud de características** para lanzamiento MVP.
+Camino Bíblico es una **aplicación educativa gamificada que transforma el estudio bíblico en una experiencia adictiva al estilo Duolingo**. El proyecto cuenta con un **backend robusto (Django + SRS) y una arquitectura de datos sofisticada**, pero enfrenta **déficits críticos en pulimento UX, documentación y completitud de características** para lanzamiento MVP.
 
 ### Estado Actual
 - **Completitud General:** ~70% funcional, ~40% pulido para producción
@@ -668,7 +668,7 @@ PROMEDIO LAUNCH-READY:   ███████████████░░░�
 
 ## CONCLUSIÓN
 
-**BibliaLingo es una aplicación pedagógicamente sólida con arquitectura backend ejemplar, pero adolece de pulimiento UX y completitud de características para lanzamiento MVP.** Con **8-10 días de desarrollo enfocado** (priorizando bloqueadores + nivel system + notificaciones), la app estaría lista para soft launch y obtención inicial de usuarios.
+**Camino Bíblico es una aplicación pedagógicamente sólida con arquitectura backend ejemplar, pero adolece de pulimiento UX y completitud de características para lanzamiento MVP.** Con **8-10 días de desarrollo enfocado** (priorizando bloqueadores + nivel system + notificaciones), la app estaría lista para soft launch y obtención inicial de usuarios.
 
 ### Readiness Score Final
 ```
@@ -682,5 +682,5 @@ Long-term Potential: HIGH (pedagógicamente diferenciada)
 ---
 
 **Documento generado por:** Auditoría UI/UX Senior  
-**Confidencialidad:** Interno — Equipo BibliaLingo  
+**Confidencialidad:** Interno — Equipo Camino Bíblico  
 **Próxima revisión:** 2 semanas post-MVP

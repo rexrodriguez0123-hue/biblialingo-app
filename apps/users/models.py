@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class UserProfile(models.Model):
     """
-    Extended user profile for BibliaLingo.
+    Extended user profile for Camino Biblico.
     Stores gamification data, preferences, and practice tracking.
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -33,3 +33,4 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f'Perfil de {self.user.username}'
+

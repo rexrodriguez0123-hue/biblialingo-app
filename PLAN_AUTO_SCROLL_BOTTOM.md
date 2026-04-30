@@ -103,7 +103,7 @@ Después de implementar, verificar:
 ---
 
 ## 📁 Archivo a Modificar
-**Path**: `biblialingo_app/lib/screens/dashboard_screen.dart`
+**Path**: `Camino Biblico_app/lib/screens/dashboard_screen.dart`
 
 **Cambios Específicos**:
 1. Agregar `late ScrollController _scrollController;` en clase state
@@ -165,3 +165,4 @@ Después de implementar, verificar:
 
 ## 🎯 Resultado Final
 Cuando usuario abre la app → ve automáticamente el bottom de las lecciones (comenzando desde el final del viaje) **INSTANTÁNEAMENTE SIN ANIMACIÓN** → puede scroll hacia arriba para explorar el camino completo hacia arriba (heaven).
+

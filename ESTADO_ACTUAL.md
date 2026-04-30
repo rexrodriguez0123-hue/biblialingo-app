@@ -1,4 +1,4 @@
-# ✅ Tareas Completadas — BibliaLingo
+# ✅ Tareas Completadas — Camino Biblico
 
 **Estado:** 92% MVP Ready — POPUPS FULLY WORKING ✅  
 **Última actualización:** 28 de Abril de 2026 (18:35 UTC-5)  
@@ -25,7 +25,7 @@
 
 **Tarea #13: Deployment a Render + QA Testing en Staging**
 
-Este es el último paso crítico antes de que BibliaLingo esté en 100% MVP. Todo el código está listo, solo falta:
+Este es el último paso crítico antes de que Camino Biblico esté en 100% MVP. Todo el código está listo, solo falta:
 
 1. **Deployment Automático** (5-10 minutos)
 2. **QA Testing Completo** (2-3 horas)
@@ -50,7 +50,7 @@ Este es el último paso crítico antes de que BibliaLingo esté en 100% MVP. Tod
 
 ### 🔴 ¿Cuál es el problema sin completar este paso?
 - El código está listo pero **no está ejecutándose en producción**
-- Los usuarios **no pueden crear cuenta** ni acceder a BibliaLingo
+- Los usuarios **no pueden crear cuenta** ni acceder a Camino Biblico
 - **Sin deployment, no hay MVP real** — es solo código local
 - **Imposible validar** con usuarios reales
 
@@ -58,7 +58,7 @@ Este es el último paso crítico antes de que BibliaLingo esté en 100% MVP. Tod
 
 **Paso 1: Confirmar que todo está comiteado** ✅
 ```bash
-cd "c:\Users\bonil\Resilio Sync\familia\Proyecto Esteban Biblialingo\biblialingo"
+cd "c:\Users\bonil\Resilio Sync\familia\Proyecto Esteban Camino Biblico\Camino Biblico"
 git status
 # Resultado esperado: "On branch main, nothing to commit, working tree clean"
 ```
@@ -77,31 +77,31 @@ git log --oneline -3
 **Status:** ✅ VERIFICADO
 
 **Paso 3: Render detectará automáticamente y redeploya**
-- Render está conectado a: `github.com/rexrodriguez0123-hue/biblialingo-app`
+- Render está conectado a: `github.com/rexrodriguez0123-hue/Camino Biblico-app`
 - Monitorea `main` branch automáticamente
 - Al detectar nuevo commit, inicia rebuild automático (SIN intervención manual)
 - Tiempo de deploy: 5-10 minutos
 
 **Paso 4: Verificar que el deploy completó exitosamente**
 1. Ir a: https://dashboard.render.com
-2. Seleccionar servicio "biblialingo-app"
+2. Seleccionar servicio "Camino Biblico-app"
 3. En pestaña "Logs" ver el proceso de build
 4. Esperar a que status cambie a "Live" (verde)
 
 **Paso 5: Validar que las URLs funcionan**
 ```bash
 # Backend health check
-curl https://biblialingo-app.onrender.com/health/
+curl https://Camino Biblico-app.onrender.com/health/
 # Esperado: {"status": "ok"}
 
 # Login endpoint (debe responder)
-curl -X POST https://biblialingo-app.onrender.com/api/v1/auth/login \
+curl -X POST https://Camino Biblico-app.onrender.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "test@test.com", "password": "test"}'
 ```
 
 ### ✅ Cuando esto esté completado
-- ✅ BibliaLingo estará en PRODUCCIÓN (100% MVP)
+- ✅ Camino Biblico estará en PRODUCCIÓN (100% MVP)
 - ✅ Usuarios reales pueden crear cuenta
 - ✅ La app Flutter se conecta al backend en la nube
 - ✅ Todo funciona sin máquina local
@@ -430,4 +430,5 @@ El proyecto está en **el punto final del MVP**. Solo quedan 2 pasos administrat
 1. **Deployment** (5-10 min automático)
 2. **QA Testing** (2-3 horas manual)
 
-**Después de esto:** BibliaLingo estará en producción con MVP 100% completo, listo para usuarios reales.
+**Después de esto:** Camino Biblico estará en producción con MVP 100% completo, listo para usuarios reales.
+

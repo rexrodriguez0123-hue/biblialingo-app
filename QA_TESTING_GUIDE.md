@@ -1,4 +1,4 @@
-# 🧪 QA Testing Guide — BibliaLingo MVP
+# 🧪 QA Testing Guide — Camino Biblico MVP
 
 **Status:** Deployment completado, listo para QA  
 **Fecha:** 28 de Abril de 2026
@@ -23,9 +23,9 @@
 ### 1. **Crear Nueva Cuenta**
 
 **Pasos:**
-1. Abrir BibliaLingo en emulador/dispositivo
+1. Abrir Camino Biblico en emulador/dispositivo
 2. Clickear "Registrarse"
-3. Email: `qa-test-{timestamp}@biblialingo.test`
+3. Email: `qa-test-{timestamp}@Camino Biblico.test`
 4. Contraseña: `TestPass123!`
 5. Clickear "Crear Cuenta"
 
@@ -280,3 +280,4 @@ Ejemplo:
 **Inicio de QA:** [Completar cuando comience testing]  
 **Fin de QA:** [Completar cuando termine testing]  
 **Status:** 🟡 EN PROGRESO
+

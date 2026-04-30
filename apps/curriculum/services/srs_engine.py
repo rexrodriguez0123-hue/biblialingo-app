@@ -1,5 +1,5 @@
 """
-SM-2 Spaced Repetition Algorithm for BibliaLingo.
+SM-2 Spaced Repetition Algorithm for Camino Biblico.
 
 Implements the SuperMemo 2 algorithm to schedule lesson reviews.
 Fields used in UserLessonProgress:
@@ -109,3 +109,4 @@ def get_lessons_due_for_review(user):
 def get_review_count(user):
     """Get the number of lessons due for review."""
     return get_lessons_due_for_review(user).count()
+

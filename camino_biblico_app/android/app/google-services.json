@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1067304772395",
+    "project_id": "camino_biblico",
+    "storage_bucket": "camino_biblico.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067304772395:android:6ba5dc4b88eea88378db6e",
+        "android_client_info": {
+          "package_name": "com.example.caminobiblico"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSlP_XI7B2nJt1kAHwPLK_1BiewEpwJNc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+

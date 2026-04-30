@@ -1,5 +1,5 @@
 """
-NLP Engine for BibliaLingo.
+NLP Engine for Camino Biblico.
 
 Generates exercises from Bible verses using SpaCy for linguistic analysis.
 Supports 5 exercise types:
@@ -508,3 +508,4 @@ def _get_distractors(correct_word, word_pool, n=3):
     if len(candidates) < n:
         return candidates
     return random.sample(candidates, n)
+

@@ -1,7 +1,7 @@
 import os
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'biblialingo.settings.prod')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'camino_biblico.settings.prod')
 django.setup()
 
 from apps.bible_content.models import Verse, Chapter
@@ -58,3 +58,4 @@ def run():
 
 if __name__ == '__main__':
     run()
+

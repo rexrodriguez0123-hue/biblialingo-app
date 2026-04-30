@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "1067304772395-2o5f8mev6rm1emhv8gci2ohheo7l822c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.caminobiblico",
+            "certificate_hash": "8dd6e89bd27260560e5d3e52c8befc1414970b84"
+          }
+        },
+        {
           "client_id": "1067304772395-p22rkcd1k7udphe9ne62bd2ernhi23ah.apps.googleusercontent.com",
           "client_type": 3
         }

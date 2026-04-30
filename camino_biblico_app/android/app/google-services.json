@@ -1,18 +1,23 @@
 {
   "project_info": {
     "project_number": "1067304772395",
-    "project_id": "camino_biblico",
-    "storage_bucket": "camino_biblico.firebasestorage.app"
+    "project_id": "biblialingo",
+    "storage_bucket": "biblialingo.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1067304772395:android:6ba5dc4b88eea88378db6e",
+        "mobilesdk_app_id": "1:1067304772395:android:b52b2e075d6a876c78db6e",
         "android_client_info": {
           "package_name": "com.example.caminobiblico"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1067304772395-p22rkcd1k7udphe9ne62bd2ernhi23ah.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBSlP_XI7B2nJt1kAHwPLK_1BiewEpwJNc"
@@ -20,11 +25,15 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1067304772395-p22rkcd1k7udphe9ne62bd2ernhi23ah.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
   ],
   "configuration_version": "1"
 }
-

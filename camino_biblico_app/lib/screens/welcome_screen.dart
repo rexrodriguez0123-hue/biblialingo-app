@@ -145,7 +145,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
               const SizedBox(height: 40),
               const Text(
-                'Bienvenido a\ncamino_biblico',
+                'Bienvenido a\nCamino Bíblico',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 32,

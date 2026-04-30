@@ -61,7 +61,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     setState(() => _isGoogleLoading = true);
     
     try {
-      const webClientId = '697027944347-sbcolvj44n7ie3395lrp6lsm7fjakrer.apps.googleusercontent.com';
+      const webClientId = '1067304772395-p22rkcd1k7udphe9ne62bd2ernhi23ah.apps.googleusercontent.com';
 
       final googleSignIn = GoogleSignIn.instance;
       await googleSignIn.initialize(

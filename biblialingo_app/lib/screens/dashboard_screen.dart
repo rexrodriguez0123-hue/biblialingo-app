@@ -141,8 +141,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onRefresh: _handleRefresh,
                 color: const Color(0xFF0277BD),
                 child: ListView(
+                  reverse: true,
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 100, bottom: 10),
+                  padding: const EdgeInsets.only(top: 100, bottom: 60),
                   children: children,
                 ),
               ),

@@ -1,4 +1,4 @@
-package com.example.camino_biblico_app
+package com.example.caminobiblico
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -122,8 +122,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (i < lessons.length - 1) {
               // La línea diagonal va desde el centro de la nube i hacia la nube i+1.
               // fromLeft = true cuando la nube superior (índice i) está en la izquierda.
+              final double currentProgress = lessons[i]['progress'] ?? 0.0;
+              final bool isCurrentCompleted = currentProgress >= 1.0;
+              
               lessonWidgets.add(
-                DiagonalDottedLine(fromLeft: i % 2 == 1),
+                DiagonalDottedLine(
+                  fromLeft: i % 2 == 1,
+                  isPreviousCompleted: isCurrentCompleted,
+                ),
               );
             }
           }

@@ -76,21 +76,26 @@ class DiagonalDottedLine extends StatelessWidget {
   final bool fromLeft;
   final double height;
   final Color color;
+  final bool isPreviousCompleted;
 
   const DiagonalDottedLine({
     super.key,
     required this.fromLeft,
     this.height = 65.0,
     this.color = const Color(0xFFB0C4D8),
+    this.isPreviousCompleted = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Si la lección anterior está completa, usar azul oscuro, si no gris
+    final Color lineColor = isPreviousCompleted ? const Color(0xFF01579B) : color;
+    
     return SizedBox(
       height: height,
       width: double.infinity,
       child: CustomPaint(
-        painter: _BezierDottedPainter(fromLeft: fromLeft, color: color),
+        painter: _BezierDottedPainter(fromLeft: fromLeft, color: lineColor),
       ),
     );
   }

@@ -53,10 +53,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
             const CircleAvatar(
               radius: 50,
               child: Icon(Icons.person, size: 50),
@@ -122,7 +123,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             const SizedBox(height: 40),
-            const Spacer(),
             ElevatedButton(
               onPressed: () {
                 final api = context.read<ApiService>();
@@ -137,6 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: const Text('Cerrar Sesión'),
             ),
           ],
+        ),
         ),
       ),
     );
